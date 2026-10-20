@@ -11,12 +11,11 @@ copier update                                  # later: pull in template changes
 
 Copier asks for the project variables (see `copier.yml`) and records the answers in `.copier-answers.yml`; commit that file. Local edits to generated files survive `copier update` (three-way merge).
 
-| Variable                                                             | Purpose                                                                                                   |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                               |
-| `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes |
-| `prettier_excludes`                                                  | Vendored or generated folders Prettier must skip                                                          |
-| `ha_testing_config`, `strict_docstrings`                             | Per-project strictness switches                                                                           |
+| Variable                                                             | Purpose                                                                                                          |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                                      |
+| `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes        |
+| `strict_docstrings`                                                  | Stricter docstring rules (pylint `docparams`, docstring-linter `returns_none`); usually needs code changes first |
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 
@@ -33,6 +32,16 @@ Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on 
 ## Keeping the repositories in step
 
 - Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. While this repository is private, give it a `TEMPLATE_TOKEN` secret (a token with read access to it); the workflow does without once the repository is public.
+
+### Letting `template-drift` read a private template
+
+`copier check-update` has to clone this repository. The default token of a target repository cannot read another private repository, so either:
+
+1. make `ha-dev-environment` public (it holds no secret): nothing else to do; or
+2. keep it private and add a `TEMPLATE_TOKEN` secret to **each** target repository (Settings, Secrets and variables, Actions): a fine-grained token with read access to `ha-dev-environment` (Contents: read) is enough. The workflow stops with a message naming this secret when it cannot read the template.
+
+Fixed choices shared by every repository: Prettier skips `card/` and every `bruno/` folder and leaves `.copier-answers.yml` alone; `tests/testing_config` and `tests/typing.py` are excluded from the linters when they exist; a `stale.yml` workflow closes inactive issues.
+
 - This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
 
 ## MCP servers
