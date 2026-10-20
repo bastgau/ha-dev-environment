@@ -20,6 +20,21 @@ Copier asks for the project variables (see `copier.yml`) and records the answers
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 
+## Adopting it in an existing repository
+
+Run `copier copy gh:bastgau/ha-dev-environment .` with `--overwrite` (the files already exist), then review `git diff`: anything you want to keep from the old version goes back as a local edit. Always copy from the `gh:` address and not from a local clone: the source is recorded in `.copier-answers.yml` and `copier update` uses it later.
+
+## Updating
+
+`copier update` in the target repository replays the template changes since the version recorded in `.copier-answers.yml` and keeps your local edits (three-way merge). Resolve any conflict, run `scripts/lint` and `scripts/test`, commit.
+
+Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on this repository. Without a tag it falls back to `HEAD`, and `copier check-update` cannot tell anything. So: **tag a release (`vX.Y.Z`) after merging a template change**. Verified in a scratch copy: with `v0.1.0` recorded and `v0.2.0` published, `copier check-update --quiet` exits with status 2.
+
+## Keeping the repositories in step
+
+- Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. While this repository is private, give it a `TEMPLATE_TOKEN` secret (a token with read access to it); the workflow does without once the repository is public.
+- This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
+
 ## Layout
 
 `template/` mirrors the target repository. Files ending in `.jinja` are rendered; the others are copied as they are. `.devcontainer/requirements-default-config.txt` is seeded once and never overwritten (regenerate it with `scripts/update_requirements`).

@@ -1,0 +1,30 @@
+---
+name: "Check template"
+
+on:
+  push:
+    tags-ignore:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check-template:
+    name: "check-template"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
+    steps:
+      - uses: "actions/checkout@v7"
+
+      - uses: "astral-sh/setup-uv@v7"
+
+      # Rendering the template for a project with and without a client, then
+      # resolving the generated pyproject.toml, is what catches a template edit
+      # that would break every repository on its next `copier update`.
+      - name: "Render and check the template"
+        run: |
+          uv tool install copier
+          scripts/check-template
