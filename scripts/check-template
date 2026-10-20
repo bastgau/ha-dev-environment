@@ -40,6 +40,7 @@ check_common() {
   done
   python3 -c "import sys, tomllib; tomllib.load(open(sys.argv[1], 'rb'))" "$dest/pyproject.toml" \
     || fail "pyproject.toml is not valid TOML"
+  "$dest/scripts/clean_bruno_headers" --check > /dev/null || fail "clean_bruno_headers fails on a project without a Bruno collection"
   (cd "$dest" && uv lock) || fail "uv lock cannot resolve pyproject.toml"
 }
 
