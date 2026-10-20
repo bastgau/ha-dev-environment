@@ -16,7 +16,7 @@ Copier asks for the project variables (see `copier.yml`) and records the answers
 | `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                               |
 | `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes |
 | `prettier_excludes`                                                  | Vendored or generated folders Prettier must skip                                                          |
-| `ha_testing_config`, `strict_docstrings`, `lenient_tests`            | Per-project strictness switches                                                                           |
+| `ha_testing_config`, `strict_docstrings`                             | Per-project strictness switches                                                                           |
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 

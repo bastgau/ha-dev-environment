@@ -71,10 +71,3 @@ strict_docstrings:
     Enforce the stricter docstring rules (pylint docparams plugin, docstring-linter
     returns_none = forbidden)? Turning it on usually needs code changes first.
   default: false
-
-lenient_tests:
-  type: bool
-  help: >-
-    Also ignore ARG001, ARG005, PLR0913, PLR0917 and SLF001 in tests/? Leave off to keep
-    them enforced (then an unused fixture argument needs an explicit noqa).
-  default: false
