@@ -11,6 +11,7 @@ Every script resolves the repository root from its own location and reads the pr
 | `test`                | Runs pytest with the coverage gates           | no                                                    |
 | `develop`             | Starts Home Assistant against `./config`      | yes — `./config` (gitignored)                         |
 | `update_requirements` | Regenerates the `default_config` requirements | yes — `.devcontainer/requirements-default-config.txt` |
+| `clean_bruno_headers` | Strips noisy response headers from Bruno examples | yes — the client's `bruno/*.bru` (none with `--check`) |
 
 `_common` is sourced by the others; it is not meant to be run.
 
@@ -44,3 +45,7 @@ Each scope has its own 95 % coverage floor and covers what it owns on its own. W
 ## `update_requirements`
 
 Walks the manifests reachable from `default_config` and rewrites the generated block of `.devcontainer/requirements-default-config.txt`. Run it **whenever `homeassistant` is upgraded**, review the diff, then run `scripts/setup`.
+
+## `clean_bruno_headers`
+
+Only does something when the bundled client ships a Bruno collection in `custom_components/<domain>/<client>/bruno/`; otherwise it says so and exits 0. Bruno records the real response headers of an example (timestamps, Cloudflare metadata, key and token fingerprints), which must not be committed. `--check` reports without writing and exits 1; the pre-commit hook runs it that way whenever a `.bru` file is staged.
