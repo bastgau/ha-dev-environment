@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Renders the template for two representative projects (one without a bundled
+# client, one with) into temporary folders and checks what can be checked
+# without a real integration around it:
+#
+#   - the generated shell scripts parse;
+#   - pyproject.toml is valid TOML and `uv lock` resolves it (this is what
+#     caught a requires-python that homeassistant's own floor made unsatisfiable);
+#   - the lint/test scopes the scripts report match the project's shape.
+#
+# It does NOT run the linters or the tests: those need real integration code.
+# Usage: scripts/check-template   (needs copier and uv on PATH)
+
+set -euo pipefail
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+render() {
+  local name="$1"
+  shift
+  local dest="$work/$name"
+  mkdir -p "$dest/custom_components/demo" "$dest/tests"
+  touch "$dest/README.md"
+  git -C "$dest" init -q
+  copier copy --quiet --trust --defaults --overwrite \
+    -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" \
+    "$@" "$root" "$dest"
+  echo "$dest"
+}
+
+check_common() {
+  local dest="$1"
+  for script in "$dest"/scripts/_common "$dest"/scripts/lint "$dest"/scripts/test "$dest"/scripts/setup "$dest"/scripts/develop; do
+    bash -n "$script" || fail "$script does not parse"
+  done
+  python3 -c "import json, sys; d = json.load(open(sys.argv[1])); assert d['workspaceFolder'] in d['workspaceMount']" \
+    "$dest/.devcontainer/devcontainer.json" || fail "devcontainer.json: workspaceMount and workspaceFolder disagree"
+  python3 -c "import sys, tomllib; tomllib.load(open(sys.argv[1], 'rb'))" "$dest/pyproject.toml" \
+    || fail "pyproject.toml is not valid TOML"
+  "$dest/scripts/clean_bruno_headers" --check > /dev/null || fail "clean_bruno_headers fails on a project without a Bruno collection"
+  (cd "$dest" && uv lock) || fail "uv lock cannot resolve pyproject.toml"
+}
+
+echo "== without a client"
+dest="$(render plain)"
+check_common "$dest"
+[ "$("$dest/scripts/lint" --list-scopes)" = '["integration", "tests"]' ] || fail "unexpected lint scopes (plain)"
+[ "$("$dest/scripts/test" --list-scopes)" = '["integration"]' ] || fail "unexpected test scopes (plain)"
+[ ! -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration generated without a client"
+
+echo "== with a client"
+dest="$(render client -d client_package=pydemo)"
+check_common "$dest"
+[ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
+[ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
+[ -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration missing with a client"
+
+echo "OK"

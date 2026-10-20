@@ -1,0 +1,226 @@
+[project]
+name = "{{ repo_name }}"
+version = "0.0.0"
+description = "{{ description }}"
+readme = "README.md"
+license = "MIT"
+# One minor only (devcontainer, CI and Home Assistant all target it); the floor
+# is whatever the pinned homeassistant requires.
+requires-python = "{{ python_requires }}"
+authors = [{ name = "Bastien Gautier", email = "contact@bastiengautier.com" }]
+maintainers = [{ name = "Bastien Gautier", email = "contact@bastiengautier.com" }]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: AsyncIO",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: {{ python_version }}",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/bastgau/{{ repo_name }}"
+Documentation = "https://github.com/bastgau/{{ repo_name }}"
+Repository = "https://github.com/bastgau/{{ repo_name }}"
+"Bug Tracker" = "https://github.com/bastgau/{{ repo_name }}/issues"
+Changelog = "https://github.com/bastgau/{{ repo_name }}/releases"
+
+# Groups rather than one flat list so that CI installs only what each job needs.
+# The ~45 packages `default_config` pulls in for a local `hass` are deliberately
+# NOT here: they live in .devcontainer/requirements-default-config.txt (see
+# scripts/update_requirements), which keeps them out of uv.lock and out of
+# Dependabot's pull requests.
+[dependency-groups]
+# Must match the homeassistant pin that pytest-homeassistant-custom-component
+# depends on, or `uv lock` fails to resolve.
+homeassistant = ["homeassistant==2026.10.1"]
+lint = [
+  "prek==0.5.5",
+  "pylint==4.1.3",
+  "pyright==1.1.414",
+  "ruff==0.17.0",
+  # Not on PyPI: installed straight from its GitHub release.
+  "docstring-linter @ https://github.com/bastgau/docstring-linter/releases/download/v0.9.0/docstring_linter-0.9.0-py3-none-any.whl",
+]
+test = ["pytest-homeassistant-custom-component==0.13.372"]
+{%- if client_package %}
+# The bundled client's own tests never start Home Assistant (see scripts/test).
+test-client = [
+  "aiohttp==3.14.4",
+  "pytest==9.0.3",
+  "pytest-asyncio==1.4.0",
+  "pytest-cov==7.1.0",
+]
+{%- endif %}
+
+[tool.uv]
+package = false
+default-groups = ["homeassistant", "lint", "test"{% if client_package %}, "test-client"{% endif %}]
+
+[tool.ruff]
+# NOTE: runtime target is Python 3.14, but ruff's target-version is intentionally
+# pinned to py313 to avoid a known ruff 0.15.x formatter bug that rewrites
+# `except (A, B):` into the PEP 758 form `except A, B:` (invalid on Python <=3.13).
+# Bump back to "py314" once the ruff formatter fix ships.
+target-version = "py313"
+line-length = 120
+indent-width = 4
+src = ["custom_components/{{ integration_domain }}"]
+{%- if ha_testing_config %}
+exclude = ["tests/testing_config/*", "tests/typing.py"]
+{%- endif %}
+
+[tool.ruff.lint]
+ignore = [
+  "ANN401",  # Opiniated warning on disallowing dynamically typed expressions
+  "D203",    # Conflicts with other rules
+  "D213",    # Conflicts with other rules
+  "TID252",  # Relative imports
+  "RUF012",  # Just broken
+  "D202",    # No blank lines allowed after function docstring
+  "D404",    # First word of the docstring should not be This
+  "D406",    # Section name should end with a newline
+  "D407",    # Section name underlining
+  "D411",    # Missing blank line before section
+  "E501",    # line too long
+  "E731",    # do not assign a lambda expression, use a def
+  "PLR2004", # Magic value used in comparison, consider replacing `xxx` with a constant variable
+  "FBT001",  # Boolean default positional argument in function definition
+  "FBT002",  # Boolean-typed positional argument in function definition
+  "ARG002",  # Unused method argument: `kwargs`
+  "PLR0911", # Too many return statements (19 > 6)
+  "PLR0912", # Too many branches
+  "PLR0915", # Too many statements (58 > 50)
+  "BLE001",  # Do not catch blind exception: `Exception`
+  "S110",    # `try`-`except`-`pass` detected, consider logging the exception
+  "CPY001",  # No copyright header convention in this project
+
+  # Formatter conflicts
+  "COM812",
+  "COM819",
+  "D206",
+  "ISC001",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "W191",
+]
+select = ["ALL"]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"homeassistant.helpers.area_registry" = "ar"
+"homeassistant.helpers.config_validation" = "cv"
+"homeassistant.helpers.device_registry" = "dr"
+"homeassistant.helpers.entity_registry" = "er"
+"homeassistant.helpers.issue_registry" = "ir"
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["homeassistant"]
+combine-as-imports = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "S101", # Use of `assert` detected -- standard in pytest test bodies
+  "S105", # Possible hardcoded password -- fixture credentials, not real secrets
+{%- if lenient_tests %}
+  "ARG001",  # Unused function argument
+  "ARG005",  # Unused lambda argument
+  "PLR0917", # Too many positional arguments
+  "PLR0913", # Too many arguments in function definition
+  "SLF001",  # Private member accessed
+{%- endif %}
+]
+
+{%- if ha_testing_config or strict_docstrings %}
+
+[tool.pylint.MASTER]
+{%- if ha_testing_config %}
+ignore-paths = ["(.*/)?tests/typing.py", "(.*/)?tests/testing_config/.*"]
+{%- endif %}
+{%- if strict_docstrings %}
+load-plugins = ["pylint.extensions.docparams"]
+{%- endif %}
+{%- endif %}
+
+[tool.pylint."MESSAGES CONTROL"]
+# Reasons disabled:
+# format - handled by ruff
+# duplicate-code - unavoidable
+# used-before-assignment - false positives with TYPE_CHECKING structures
+# wrong-import-order - pylint has no equivalent to ruff's known-first-party;
+#   homeassistant is treated as first-party by ruff/isort (see [tool.ruff.lint.isort]),
+#   which pylint's import checker cannot be configured to match.
+disable = [
+  "abstract-method",
+  "duplicate-code",
+  "format",
+  "unexpected-keyword-arg",
+  "used-before-assignment",
+  "wrong-import-order",
+]
+max-args = 6
+max-positional-arguments = 6
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# pytest-homeassistant-custom-component's autouse fixture
+# `enable_event_loop_debug` is declared with @pytest.fixture despite being
+# async, which pytest-asyncio only tolerates in "auto" mode ("strict" raises
+# PytestRemovedIn9Warning: async fixture with no plugin/hook handling it).
+asyncio_mode = "auto"
+# Coverage is NOT in addopts: scripts/test (and CI) pass it per scope, so a bare
+# `pytest` from VSCode or while iterating on one test is never gated.
+
+[tool.coverage.run]
+source = ["custom_components/{{ integration_domain }}"]
+# VSCode's Python Testing extension invokes pytest with its own --cov=.
+# argument, overriding `source` above. `omit` still applies afterwards, so
+# it keeps tests/ out of the coverage report regardless of how pytest-cov
+# was invoked (scripts/test, VSCode, CI, ...).
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+
+[tool.docstring-linter]
+style = "google"
+select = ["ALL"]
+ignore_placeholder_docstrings = false
+workers = 1
+summary_max_length = 120
+{%- if strict_docstrings %}
+returns_none = "forbidden"
+{%- endif %}
+{%- if ha_testing_config %}
+exclude = ["testing_config", "tests/typing.py"]
+{%- endif %}
+
+[[tool.docstring-linter.overrides]]
+ignore = ["imperative_mood"]
+paths = ["tests/**"]
+args_section = "forbidden"
+returns_section = "forbidden"
+yields_section = "forbidden"
+raises_section = "forbidden"
+attributes_section = "forbidden"
+description_section = "optional"
+examples_section = "forbidden"
+notes_section = "forbidden"
+todo_section = "forbidden"
+blank_lines_before_closing_quotes = 0
+
+[[tool.docstring-linter.overrides]]
+paths = ["custom_components/{{ integration_domain }}/*.py"]
+summary_max_length = 120
+{%- if client_package %}
+
+[[tool.docstring-linter.overrides]]
+paths = ["custom_components/{{ integration_domain }}/{{ client_package }}/*.py", "tests/**/conftest.py"]
+summary_max_length = 120
+{%- endif %}
