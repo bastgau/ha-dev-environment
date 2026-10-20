@@ -38,6 +38,8 @@ check_common() {
   for script in "$dest"/scripts/_common "$dest"/scripts/lint "$dest"/scripts/test "$dest"/scripts/setup "$dest"/scripts/develop; do
     bash -n "$script" || fail "$script does not parse"
   done
+  python3 -c "import json, sys; d = json.load(open(sys.argv[1])); assert d['workspaceFolder'] in d['workspaceMount']" \
+    "$dest/.devcontainer/devcontainer.json" || fail "devcontainer.json: workspaceMount and workspaceFolder disagree"
   python3 -c "import sys, tomllib; tomllib.load(open(sys.argv[1], 'rb'))" "$dest/pyproject.toml" \
     || fail "pyproject.toml is not valid TOML"
   "$dest/scripts/clean_bruno_headers" --check > /dev/null || fail "clean_bruno_headers fails on a project without a Bruno collection"
