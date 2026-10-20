@@ -27,7 +27,7 @@ render() {
   mkdir -p "$dest/custom_components/demo" "$dest/tests"
   touch "$dest/README.md"
   git -C "$dest" init -q
-  copier copy --quiet --trust --defaults --overwrite \
+  copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
     -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" \
     "$@" "$root" "$dest"
   echo "$dest"
@@ -43,12 +43,28 @@ check_common() {
   python3 -c "import sys, tomllib; tomllib.load(open(sys.argv[1], 'rb'))" "$dest/pyproject.toml" \
     || fail "pyproject.toml is not valid TOML"
   "$dest/scripts/clean_bruno_headers" --check > /dev/null || fail "clean_bruno_headers fails on a project without a Bruno collection"
+  # Prettier must leave Copier's own answers file alone, or each `copier update` would fight it.
+  if command -v npx > /dev/null 2>&1; then
+    (cd "$dest" && git add -A && scripts/lint repo > /dev/null && git diff --quiet -- .copier-answers.yml) \
+      || fail "scripts/lint repo rewrites .copier-answers.yml"
+  fi
   (cd "$dest" && uv lock) || fail "uv lock cannot resolve pyproject.toml"
 }
 
+echo "== markdown formatting"
+# Generated markdown is copied as is into every repository, where `scripts/lint repo`
+# runs Prettier: anything not already formatted would be rewritten there.
+if command -v npx > /dev/null 2>&1; then
+  (cd "$root" && npx --yes prettier@3.6.2 --check README.md "template/**/*.md") \
+    || fail "markdown files are not formatted with Prettier"
+else
+  echo "npx not found: skipped"
+fi
+
 echo "== without a client"
-dest="$(render plain)"
+dest="$(render plain -d prettier_excludes=)"
 check_common "$dest"
+! grep -q '\^()/' "$dest/.pre-commit-config.yaml" || fail "empty prettier_excludes renders an empty exclude pattern"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["integration", "tests"]' ] || fail "unexpected lint scopes (plain)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["integration"]' ] || fail "unexpected test scopes (plain)"
 [ ! -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration generated without a client"
