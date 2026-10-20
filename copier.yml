@@ -43,11 +43,6 @@ client_tests_path:
   default: "tests/{{ integration_domain }}/{{ client_package }}"
   when: "{{ client_package != '' }}"
 
-prettier_excludes:
-  type: str
-  help: Comma-separated top-level folders Prettier must leave alone (vendored or generated files)
-  default: card
-
 python_version:
   type: str
   help: Python version of the runtime (devcontainer, CI)
@@ -57,13 +52,6 @@ python_requires:
   type: str
   help: requires-python of pyproject.toml (must satisfy the homeassistant pin, e.g. >=3.14.2)
   default: ">=3.14.2,<3.15"
-
-ha_testing_config:
-  type: bool
-  help: >-
-    Does tests/ vendor Home Assistant's own test scaffolding (tests/testing_config,
-    tests/typing.py)? Those files are excluded from every linter.
-  default: false
 
 strict_docstrings:
   type: bool

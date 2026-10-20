@@ -1,9 +1,7 @@
 {
   "typeCheckingMode": "strict",
   "reportMissingTypeStubs": false,
-{%- if ha_testing_config %}
   "ignore": ["tests/testing_config", "tests/typing.py"],
-{%- endif %}
   "executionEnvironments": [
     {
       "root": "tests",

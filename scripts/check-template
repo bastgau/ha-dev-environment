@@ -62,12 +62,27 @@ else
 fi
 
 echo "== without a client"
-dest="$(render plain -d prettier_excludes=)"
+dest="$(render plain)"
 check_common "$dest"
-! grep -q '\^()/' "$dest/.pre-commit-config.yaml" || fail "empty prettier_excludes renders an empty exclude pattern"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["integration", "tests"]' ] || fail "unexpected lint scopes (plain)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["integration"]' ] || fail "unexpected test scopes (plain)"
 [ ! -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration generated without a client"
+
+# Fixed choices of the template, checked on the rendered project.
+for workflow in lint test; do
+  grep -q 'pull-requests: read' "$dest/.github/workflows/$workflow.yml" \
+    || fail "$workflow.yml: the changes job lacks pull-requests: read (dorny/paths-filter fails without it)"
+done
+[ -f "$dest/.github/workflows/stale.yml" ] || fail "stale.yml is missing"
+mkdir -p "$dest/card" "$dest/custom_components/demo/pyclient/bruno"
+printf '{"a":   1}\n' > "$dest/card/vendored.json"
+printf '{"a":   1}\n' > "$dest/custom_components/demo/pyclient/bruno/collection.json"
+if command -v npx > /dev/null 2>&1; then
+  (cd "$dest" && scripts/lint repo > /dev/null)
+  grep -q '"a":   1' "$dest/card/vendored.json" || fail "scripts/lint repo reformatted card/"
+  grep -q '"a":   1' "$dest/custom_components/demo/pyclient/bruno/collection.json" || fail "scripts/lint repo reformatted a bruno/ folder"
+fi
+grep -q 'bruno' "$dest/.pre-commit-config.yaml" || fail "pre-commit does not skip bruno/ folders"
 
 echo "== with a client"
 dest="$(render client -d client_package=pydemo)"

@@ -68,9 +68,8 @@ target-version = "py313"
 line-length = 120
 indent-width = 4
 src = ["custom_components/{{ integration_domain }}"]
-{%- if ha_testing_config %}
+# Home Assistant test scaffolding some repositories carry in tests/ (absent elsewhere, so harmless).
 exclude = ["tests/testing_config/*", "tests/typing.py"]
-{%- endif %}
 
 [tool.ruff.lint]
 ignore = [
@@ -144,15 +143,11 @@ max-complexity = 25
 ]
 
 
-{%- if ha_testing_config or strict_docstrings %}
 
 [tool.pylint.MASTER]
-{%- if ha_testing_config %}
 ignore-paths = ["(.*/)?tests/typing.py", "(.*/)?tests/testing_config/.*"]
-{%- endif %}
 {%- if strict_docstrings %}
 load-plugins = ["pylint.extensions.docparams"]
-{%- endif %}
 {%- endif %}
 
 [tool.pylint."MESSAGES CONTROL"]
@@ -204,9 +199,7 @@ summary_max_length = 120
 {%- if strict_docstrings %}
 returns_none = "forbidden"
 {%- endif %}
-{%- if ha_testing_config %}
 exclude = ["testing_config", "tests/typing.py"]
-{%- endif %}
 
 [[tool.docstring-linter.overrides]]
 ignore = ["imperative_mood"]
