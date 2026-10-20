@@ -35,6 +35,12 @@ Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on 
 - Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. While this repository is private, give it a `TEMPLATE_TOKEN` secret (a token with read access to it); the workflow does without once the repository is public.
 - This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
 
+## MCP servers
+
+`template/.mcp.json` declares the GitHub MCP server shared by every repository; the token comes from `GITHUB_PERSONAL_ACCESS_TOKEN`, which the devcontainer forwards from your host (`remoteEnv`). Nothing secret is committed.
+
+A server that only one repository needs: add its entry to that repository's own `.mcp.json`. `copier update` merges it with the template's changes and keeps it (checked on a scratch copy: a local `chrome-devtools` entry survived a template change to the `github` entry). A conflict can only happen if both sides edit the same lines; resolve it like any merge conflict. A server tied to your machine (a local address, a personal path) does not belong in the repository at all: add it with `claude mcp add --scope local` or `--scope user` instead.
+
 ## Layout
 
 `template/` mirrors the target repository. Files ending in `.jinja` are rendered; the others are copied as they are. `.devcontainer/requirements-default-config.txt` is seeded once and never overwritten (regenerate it with `scripts/update_requirements`).
