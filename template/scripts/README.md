@@ -4,13 +4,13 @@ Managed by [ha-dev-environment](https://github.com/bastgau/ha-dev-environment): 
 
 Every script resolves the repository root from its own location and reads the project variables (integration domain, optional bundled client, Prettier exclusions) from `.devcontainer/.common-env`, so it can be run from anywhere.
 
-| Script                | What it does                                  | Modifies files                                        |
-| --------------------- | --------------------------------------------- | ----------------------------------------------------- |
-| `setup`               | Builds the development environment            | yes — `.venv`, `~/.vimrc`, global npm                 |
-| `lint`                | Runs the five CI checks, plus Prettier        | yes — the `repo` scope reformats in place             |
-| `test`                | Runs pytest with the coverage gates           | no                                                    |
-| `develop`             | Starts Home Assistant against `./config`      | yes — `./config` (gitignored)                         |
-| `update_requirements` | Regenerates the `default_config` requirements | yes — `.devcontainer/requirements-default-config.txt` |
+| Script                | What it does                                      | Modifies files                                         |
+| --------------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| `setup`               | Builds the development environment                | yes — `.venv`, `~/.vimrc`, global npm                  |
+| `lint`                | Runs the five CI checks, plus Prettier            | yes — the `repo` scope reformats in place              |
+| `test`                | Runs pytest with the coverage gates               | no                                                     |
+| `develop`             | Starts Home Assistant against `./config`          | yes — `./config` (gitignored)                          |
+| `update_requirements` | Regenerates the `default_config` requirements     | yes — `.devcontainer/requirements-default-config.txt`  |
 | `clean_bruno_headers` | Strips noisy response headers from Bruno examples | yes — the client's `bruno/*.bru` (none with `--check`) |
 
 `_common` is sourced by the others; it is not meant to be run.
@@ -25,12 +25,12 @@ Every script resolves the repository root from its own location and reads the pr
 scripts/lint [scope ...]     # default: all
 ```
 
-| Scope         | Paths                                                  | Checks                                                     |
-| ------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| Scope         | Paths                                                   | Checks                                                     |
+| ------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
 | `client`      | `custom_components/<domain>/<client>` (if there is one) | ruff check, ruff format, pylint, pyright, docstring-linter |
-| `integration` | `custom_components/<domain>/*.py`                      | same five                                                  |
-| `tests`       | `tests/`                                               | same five                                                  |
-| `repo`        | `**/*.{json,yaml,yml,md}` minus the excluded folders   | Prettier (**writes**)                                      |
+| `integration` | `custom_components/<domain>/*.py`                       | same five                                                  |
+| `tests`       | `tests/`                                                | same five                                                  |
+| `repo`        | `**/*.{json,yaml,yml,md}` minus the excluded folders    | Prettier (**writes**)                                      |
 
 `.github/workflows/lint.yml` asks `scripts/lint --list-scopes` which scopes exist, so **a green run here predicts a green CI run** by construction. Every check runs even after one fails.
 

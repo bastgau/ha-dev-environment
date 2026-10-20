@@ -55,6 +55,8 @@ repos:
         additional_dependencies:
           - prettier@3.6.2
           - prettier-plugin-sort-json@4.2.0
-        # `card/` holds a vendored third-party card kept diffable against
-        # upstream: reformatting it rewrites every line.
+{%- if prettier_excludes %}
+        # Vendored or generated folders (see prettier_excludes in .copier-answers.yml):
+        # reformatting them would rewrite every line.
         exclude: ^({{ prettier_excludes.split(",") | join("|") }})/
+{%- endif %}
