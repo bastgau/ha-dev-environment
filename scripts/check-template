@@ -43,6 +43,11 @@ check_common() {
   python3 -c "import sys, tomllib; tomllib.load(open(sys.argv[1], 'rb'))" "$dest/pyproject.toml" \
     || fail "pyproject.toml is not valid TOML"
   "$dest/scripts/clean_bruno_headers" --check > /dev/null || fail "clean_bruno_headers fails on a project without a Bruno collection"
+  # Prettier must leave Copier's own answers file alone, or each `copier update` would fight it.
+  if command -v npx > /dev/null 2>&1; then
+    (cd "$dest" && git add -A && scripts/lint repo > /dev/null && git diff --quiet -- .copier-answers.yml) \
+      || fail "scripts/lint repo rewrites .copier-answers.yml"
+  fi
   (cd "$dest" && uv lock) || fail "uv lock cannot resolve pyproject.toml"
 }
 
