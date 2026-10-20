@@ -1,0 +1,80 @@
+# Copier template for bastgau's Home Assistant custom integrations.
+#
+#   copier copy gh:bastgau/ha-dev-environment <target>     # first time
+#   copier update                                           # later, from the target
+_min_copier_version: "9.0.0"
+_subdirectory: template
+_templates_suffix: .jinja
+# Generated per repository (HA version dependent): seeded once, never overwritten.
+_skip_if_exists:
+  - .devcontainer/requirements-default-config.txt
+
+integration_domain:
+  type: str
+  help: Integration domain (name of the custom_components/<domain> folder)
+  validator: >-
+    {% if not (integration_domain | regex_search('^[a-z][a-z0-9_]*$')) %}
+    Use lowercase letters, digits and underscores only
+    {% endif %}
+
+integration_name:
+  type: str
+  help: Display name of the integration
+
+repo_name:
+  type: str
+  help: GitHub repository name, also the devcontainer workspace folder
+  default: "ha-{{ integration_domain | replace('_', '-') }}"
+
+description:
+  type: str
+  help: One-line project description (pyproject.toml)
+
+client_package:
+  type: str
+  help: >-
+    Name of the API client package bundled inside custom_components/<domain>/
+    (leave empty when there is none)
+  default: ""
+
+client_tests_path:
+  type: str
+  help: Folder holding the client's own tests (only used when there is a client)
+  default: "tests/{{ integration_domain }}/{{ client_package }}"
+  when: "{{ client_package != '' }}"
+
+prettier_excludes:
+  type: str
+  help: Comma-separated top-level folders Prettier must leave alone (vendored or generated files)
+  default: card
+
+python_version:
+  type: str
+  help: Python version of the runtime (devcontainer, CI)
+  default: "3.14"
+
+python_requires:
+  type: str
+  help: requires-python of pyproject.toml (must satisfy the homeassistant pin, e.g. >=3.14.2)
+  default: ">=3.14.2,<3.15"
+
+ha_testing_config:
+  type: bool
+  help: >-
+    Does tests/ vendor Home Assistant's own test scaffolding (tests/testing_config,
+    tests/typing.py)? Those files are excluded from every linter.
+  default: false
+
+strict_docstrings:
+  type: bool
+  help: >-
+    Enforce the stricter docstring rules (pylint docparams plugin, docstring-linter
+    returns_none = forbidden)? Turning it on usually needs code changes first.
+  default: false
+
+lenient_tests:
+  type: bool
+  help: >-
+    Also ignore ARG001, ARG005, PLR0913, PLR0917 and SLF001 in tests/? Leave off to keep
+    them enforced (then an unused fixture argument needs an explicit noqa).
+  default: false
