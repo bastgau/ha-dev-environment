@@ -58,6 +58,14 @@ Fixed choices shared by every repository: Prettier skips `card/` and every `brun
 
 - This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
 
+## Labels
+
+`template/.github/labels.json` is the reference list of GitHub labels for every project: one `pr:<type>` label per commit type allowed by `.commitlintrc.mjs` (`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`), `pr:release` for the pull request that releases `develop` to `main`, and the `issue:*` labels used by the issue templates and by the stale workflow. Each entry has a `name`, a `color` (six hexadecimal digits, no `#`) and a `description`.
+
+Every repository gets the list as `.github/labels.json` and a `sync-labels.yml` workflow that creates the labels, or updates their colour and description, whenever the list changes or on demand (Actions, Sync labels, Run workflow). It never deletes a label. This repository applies the same list to itself.
+
+To add or change a label: edit `template/.github/labels.json`, merge, release, then `copier update` in each repository.
+
 ## MCP servers
 
 `template/.mcp.json` declares the GitHub MCP server shared by every repository; the token comes from `GITHUB_PERSONAL_ACCESS_TOKEN`, which the devcontainer forwards from your host (`remoteEnv`). Nothing secret is committed.

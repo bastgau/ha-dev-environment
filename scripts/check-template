@@ -74,6 +74,17 @@ for workflow in lint test; do
     || fail "$workflow.yml: the changes job lacks pull-requests: read (dorny/paths-filter fails without it)"
 done
 [ -f "$dest/.github/workflows/stale.yml" ] || fail "stale.yml is missing"
+[ -f "$dest/.github/workflows/sync-labels.yml" ] || fail "sync-labels.yml is missing"
+python3 - "$dest/.github/labels.json" <<'PY' || fail "labels.json is not a valid label list"
+import json, re, sys
+labels = json.load(open(sys.argv[1]))
+names = [label["name"] for label in labels]
+assert names and len(names) == len(set(names)), "empty or duplicated names"
+for label in labels:
+    assert set(label) == {"name", "color", "description"}, label
+    assert re.fullmatch(r"[0-9a-f]{6}", label["color"]), label
+    assert label["description"], label
+PY
 mkdir -p "$dest/card" "$dest/custom_components/demo/pyclient/bruno"
 printf '{"a":   1}\n' > "$dest/card/vendored.json"
 printf '{"a":   1}\n' > "$dest/custom_components/demo/pyclient/bruno/collection.json"
