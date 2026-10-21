@@ -22,8 +22,6 @@ Copier is a Python command line tool (this template needs Copier 9.0.0 or newer,
 
    `uvx --from copier copier <command>` runs it without installing anything. Any other way of installing a Python command line tool, such as `pipx install copier`, works too.
 
-3. Make sure Copier can clone this repository. While it is private, authenticate against GitHub first (`gh auth login`, or an SSH key and `git@github.com:` addresses instead of `gh:`).
-
 To upgrade Copier later: `uv tool upgrade copier`.
 
 ## Use
@@ -54,14 +52,7 @@ Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on 
 
 ## Keeping the repositories in step
 
-- Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. While this repository is private, give it a `TEMPLATE_TOKEN` secret (a token with read access to it); the workflow does without once the repository is public.
-
-### Letting `template-drift` read a private template
-
-`copier check-update` has to clone this repository. The default token of a target repository cannot read another private repository, so either:
-
-1. make `ha-dev-environment` public (it holds no secret): nothing else to do; or
-2. keep it private and add a `TEMPLATE_TOKEN` secret to **each** target repository (Settings, Secrets and variables, Actions): a fine-grained token with read access to `ha-dev-environment` (Contents: read) is enough. The workflow stops with a message naming this secret when it cannot read the template.
+- Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. This repository is public, so the workflow needs no token.
 
 Fixed choices shared by every repository: Prettier skips `card/` and every `bruno/` folder and leaves `.copier-answers.yml` alone; `tests/testing_config` and `tests/typing.py` are excluded from the linters when they exist; a `stale.yml` workflow closes inactive issues.
 
