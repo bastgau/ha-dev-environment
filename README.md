@@ -2,6 +2,30 @@
 
 Shared development environment for bastgau's Home Assistant custom integrations (`ha-pi-hole-v6`, `ha-device-link-tools`, `ha-betaseries`, `ha-clouding`): devcontainer, `uv` project layout, lint/test scripts, GitHub workflows, pre-commit. It is a [Copier](https://copier.readthedocs.io) template.
 
+## Installation
+
+Copier is a Python command line tool (this template needs Copier 9.0.0 or newer, see `_min_copier_version` in `copier.yml`) and needs `git`. The steps are the same on Linux, macOS and Windows with WSL.
+
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), which the generated repositories use as well:
+
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh   # Linux, macOS, WSL
+   # macOS with Homebrew: brew install uv
+   ```
+
+2. Install Copier as a tool, so that it does not touch any project environment:
+
+   ```bash
+   uv tool install copier
+   copier --version
+   ```
+
+   `uvx --from copier copier <command>` runs it without installing anything. Any other way of installing a Python command line tool, such as `pipx install copier`, works too.
+
+3. Make sure Copier can clone this repository. While it is private, authenticate against GitHub first (`gh auth login`, or an SSH key and `git@github.com:` addresses instead of `gh:`).
+
+To upgrade Copier later: `uv tool upgrade copier`.
+
 ## Use
 
 ```bash
