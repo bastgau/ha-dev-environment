@@ -5,9 +5,11 @@
 _min_copier_version: "9.0.0"
 _subdirectory: template
 _templates_suffix: .jinja
-# Generated per repository (HA version dependent): seeded once, never overwritten.
+# Seeded once, never overwritten: generated per repository (HA version dependent), or
+# owned by the repository once created (project-specific fields of the bug report).
 _skip_if_exists:
   - .devcontainer/requirements-default-config.txt
+  - .github/ISSUE_TEMPLATE/bug_report.md
 
 integration_domain:
   type: str
