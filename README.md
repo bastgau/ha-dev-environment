@@ -54,9 +54,17 @@ Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on 
 
 - Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. This repository is public, so the workflow needs no token.
 
-Fixed choices shared by every repository: Prettier skips `card/` and every `bruno/` folder and leaves `.copier-answers.yml` alone; `tests/testing_config` and `tests/typing.py` are excluded from the linters when they exist; a `stale.yml` workflow closes inactive issues.
+Fixed choices shared by every repository: Prettier skips `card/` and every `bruno/` folder and leaves `.copier-answers.yml` alone; `tests/testing_config` and `tests/typing.py` are excluded from the linters when they exist; a `stale.yml` workflow closes inactive issues; `.github/ISSUE_TEMPLATE` holds the issue templates (bug report, feature proposal, blank issues disabled), whose labels all come from the labels list below.
 
 - This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
+
+## Labels
+
+`template/.github/labels.json` is the reference list of GitHub labels for every project: one `pr:<type>` label per commit type allowed by `.commitlintrc.mjs` (`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`), `pr:release` for the pull request that releases `develop` to `main`, and the `issue:*` labels used by the issue templates and by the stale workflow. Each entry has a `name`, a `color` (six hexadecimal digits, no `#`) and a `description`.
+
+Every repository gets the list as `.github/labels.json` and a `sync-labels.yml` workflow that creates the labels, or updates their colour and description, whenever the list changes or on demand (Actions, Sync labels, Run workflow). It never deletes a label. This repository applies the same list to itself.
+
+To add or change a label: edit `template/.github/labels.json`, merge, release, then `copier update` in each repository.
 
 ## MCP servers
 
@@ -66,7 +74,7 @@ A server that only one repository needs: add its entry to that repository's own 
 
 ## Layout
 
-`template/` mirrors the target repository. Files ending in `.jinja` are rendered; the others are copied as they are. `.devcontainer/requirements-default-config.txt` is seeded once and never overwritten (regenerate it with `scripts/update_requirements`).
+`template/` mirrors the target repository. Files ending in `.jinja` are rendered; the others are copied as they are. `.devcontainer/requirements-default-config.txt` is seeded once and never overwritten (regenerate it with `scripts/update_requirements`). `.github/ISSUE_TEMPLATE/bug_report.md` is seeded once too: it names the integration, then belongs to the repository, which can add its own fields (the version of a device, a compatibility note).
 
 ## Checked
 

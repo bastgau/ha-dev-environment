@@ -74,6 +74,37 @@ for workflow in lint test; do
     || fail "$workflow.yml: the changes job lacks pull-requests: read (dorny/paths-filter fails without it)"
 done
 [ -f "$dest/.github/workflows/stale.yml" ] || fail "stale.yml is missing"
+[ -f "$dest/.github/workflows/sync-labels.yml" ] || fail "sync-labels.yml is missing"
+python3 - "$dest/.github/labels.json" <<'PY' || fail "labels.json is not a valid label list"
+import json, re, sys
+labels = json.load(open(sys.argv[1]))
+names = [label["name"] for label in labels]
+assert names and len(names) == len(set(names)), "empty or duplicated names"
+for label in labels:
+    assert set(label) == {"name", "color", "description"}, label
+    assert re.fullmatch(r"[0-9a-f]{6}", label["color"]), label
+    assert label["description"], label
+PY
+for template in config.yml feature_request.md bug_report.md; do
+  [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
+done
+grep -qx '\*\*Demo version:\*\*' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "bug_report.md does not name the integration"
+# Every label an issue template applies must be one the labels workflow creates.
+python3 - "$dest/.github" <<'PY' || fail "an issue template uses a label missing from labels.json"
+import json, pathlib, re, sys
+root = pathlib.Path(sys.argv[1])
+known = {label["name"] for label in json.load(open(root / "labels.json"))}
+for template in (root / "ISSUE_TEMPLATE").glob("*.md"):
+    used = re.search(r"^labels: \[(.*)\]$", template.read_text(), re.MULTILINE)
+    assert used, template.name
+    for name in re.findall(r'"([^"]+)"', used.group(1)):
+        assert name in known, (template.name, name)
+PY
+# The bug report belongs to the repository once created: a new render keeps it.
+printf 'local bug report\n' > "$dest/.github/ISSUE_TEMPLATE/bug_report.md"
+copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
+  -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" "$root" "$dest"
+grep -qx 'local bug report' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "a new render overwrote bug_report.md"
 mkdir -p "$dest/card" "$dest/custom_components/demo/pyclient/bruno"
 printf '{"a":   1}\n' > "$dest/card/vendored.json"
 printf '{"a":   1}\n' > "$dest/custom_components/demo/pyclient/bruno/collection.json"
