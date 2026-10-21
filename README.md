@@ -15,7 +15,6 @@ Copier asks for the project variables (see `copier.yml`) and records the answers
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                                      |
 | `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes        |
-| `strict_docstrings`                                                  | Stricter docstring rules (pylint `docparams`, docstring-linter `returns_none`); usually needs code changes first |
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 
