@@ -58,17 +58,17 @@ python_requires:
 github_owner:
   type: str
   help: GitHub account that owns the repository (project URLs, assignee of the pull request commands)
-  default: "bastgau"
+  default: "janedoe"
 
 author_name:
   type: str
   help: Author and copyright holder (pyproject.toml authors and maintainers, LICENSE)
-  default: "Bastien Gautier"
+  default: "Jane Doe"
 
 author_email:
   type: str
   help: Contact address of the author (pyproject.toml authors and maintainers)
-  default: "contact@bastiengautier.com"
+  default: "jane.doe@example.com"
 
 copyright_year:
   type: int

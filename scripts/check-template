@@ -87,7 +87,7 @@ for label in labels:
     assert label["description"], label
 PY
 # The LICENSE notice starts at the year Copier was asked for, the current year by default.
-grep -qx "Copyright (c) $(date +%Y) Bastien Gautier" "$dest/LICENSE" || fail "LICENSE does not carry the current year by default"
+grep -qx "Copyright (c) $(date +%Y) Jane Doe" "$dest/LICENSE" || fail "LICENSE does not carry the current year and the default author"
 for template in config.yml feature_request.md bug_report.md; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
@@ -119,19 +119,19 @@ fi
 grep -q 'bruno' "$dest/.pre-commit-config.yaml" || fail "pre-commit does not skip bruno/ folders"
 
 echo "== with a client"
-dest="$(render client -d client_package=pydemo -d copyright_year=2024 -d author_name="Jane Doe" -d author_email=jane@example.com -d github_owner=janedoe)"
+dest="$(render client -d client_package=pydemo -d copyright_year=2024 -d author_name="Bastien Gautier" -d author_email=contact@bastiengautier.com -d github_owner=bastgau)"
 check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
 [ -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration missing with a client"
-grep -qx "Copyright (c) 2024 Jane Doe" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"
-python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['project']; assert p['authors'] == p['maintainers'] == [{'name': 'Jane Doe', 'email': 'jane@example.com'}], p" \
+grep -qx "Copyright (c) 2024 Bastien Gautier" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"
+python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['project']; assert p['authors'] == p['maintainers'] == [{'name': 'Bastien Gautier', 'email': 'contact@bastiengautier.com'}], p" \
   "$dest/pyproject.toml" || fail "pyproject.toml ignores author_name or author_email"
-python3 -c "import sys, tomllib; urls = tomllib.load(open(sys.argv[1], 'rb'))['project']['urls']; assert all(u.startswith('https://github.com/janedoe/') for u in urls.values()), urls" \
+python3 -c "import sys, tomllib; urls = tomllib.load(open(sys.argv[1], 'rb'))['project']['urls']; assert all(u.startswith('https://github.com/bastgau/') for u in urls.values()), urls" \
   "$dest/pyproject.toml" || fail "pyproject.toml URLs ignore github_owner"
 for command in create-develop-pull-request create-main-pull-request; do
-  grep -q 'assigned to `janedoe`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
-  ! grep -q bastgau "$dest/.claude/commands/$command.md" || fail "$command.md still names bastgau"
+  grep -q 'assigned to `bastgau`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
+  ! grep -q janedoe "$dest/.claude/commands/$command.md" || fail "$command.md still names the default owner"
 done
 
 echo "OK"
