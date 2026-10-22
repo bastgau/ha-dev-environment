@@ -49,6 +49,7 @@ check_common() {
       || fail "scripts/lint repo rewrites .copier-answers.yml"
   fi
   (cd "$dest" && uv lock) || fail "uv lock cannot resolve pyproject.toml"
+  grep -qx 'name = "copier"' "$dest/uv.lock" || fail "copier is not in the locked environment (needed for uv run copier update)"
 }
 
 echo "== markdown formatting"
