@@ -49,7 +49,7 @@ Run `copier copy gh:bastgau/ha-dev-environment .` with `--overwrite` (the files 
 
 ## Updating
 
-The first `copier update` to a version that renders `LICENSE` asks for `copyright_year` (with `--defaults`, the current year is taken): give the year the repository was created, once, for instance `uv run copier update -d copyright_year=2024`. It is recorded in `.copier-answers.yml`. Creation years, from each repository's first commit: `ha-custom-universal-media-player` 2024, `ha-pi-hole-v6` and `ha-cup-component` 2025, `ha-clouding`, `ha-betaseries`, `ha-device-link-tools` and `ha-globe-radio` 2026.
+The first `copier update` to a version that renders `LICENSE` asks for `copyright_year` (with `--defaults`, the current year is taken): give the year the repository was created, once, for instance `uv run copier update -d copyright_year=2024`. It is recorded in `.copier-answers.yml`. Where the existing `LICENSE` carries another year (2026 in `ha-custom-universal-media-player`, `ha-pi-hole-v6` and `ha-cup-component`), that update leaves a conflict in `LICENSE`: keep the `after updating` side. Creation years, from each repository's first commit: `ha-custom-universal-media-player` 2024, `ha-pi-hole-v6` and `ha-cup-component` 2025, `ha-clouding`, `ha-betaseries`, `ha-device-link-tools` and `ha-globe-radio` 2026.
 
 `copier update` in the target repository replays the template changes since the version recorded in `.copier-answers.yml` and keeps your local edits (three-way merge). Resolve any conflict, run `scripts/lint` and `scripts/test`, commit.
 
