@@ -35,10 +35,11 @@ copier update                                  # later: pull in template changes
 
 Copier asks for the project variables (see `copier.yml`) and records the answers in `.copier-answers.yml`; commit that file. Local edits to generated files survive `copier update` (three-way merge).
 
-| Variable                                                             | Purpose                                                                                                   |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                               |
-| `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes |
+| Variable                                                             | Purpose                                                                                                                      |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                                                  |
+| `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes                    |
+| `copyright_year`                                                     | First year of the `LICENSE` notice (MIT, Bastien Gautier): the year the repository was created. Defaults to the current year |
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 
@@ -47,6 +48,8 @@ Copier asks for the project variables (see `copier.yml`) and records the answers
 Run `copier copy gh:bastgau/ha-dev-environment .` with `--overwrite` (the files already exist), then review `git diff`: anything you want to keep from the old version goes back as a local edit. Always copy from the `gh:` address and not from a local clone: the source is recorded in `.copier-answers.yml` and `copier update` uses it later.
 
 ## Updating
+
+The first `copier update` to a version that renders `LICENSE` asks for `copyright_year` (with `--defaults`, the current year is taken): give the year the repository was created, once, for instance `uv run copier update -d copyright_year=2024`. It is recorded in `.copier-answers.yml`. Where the existing `LICENSE` carries another year (2026 in `ha-custom-universal-media-player`, `ha-pi-hole-v6` and `ha-cup-component`), that update leaves a conflict in `LICENSE`: keep the `after updating` side. Creation years, from each repository's first commit: `ha-custom-universal-media-player` 2024, `ha-pi-hole-v6` and `ha-cup-component` 2025, `ha-clouding`, `ha-betaseries`, `ha-device-link-tools` and `ha-globe-radio` 2026.
 
 `copier update` in the target repository replays the template changes since the version recorded in `.copier-answers.yml` and keeps your local edits (three-way merge). Resolve any conflict, run `scripts/lint` and `scripts/test`, commit.
 
