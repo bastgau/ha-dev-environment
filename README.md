@@ -24,6 +24,8 @@ Copier is a Python command line tool (this template needs Copier 9.0.0 or newer,
 
 To upgrade Copier later: `uv tool upgrade copier`.
 
+In a repository generated from this template, Copier is already there: it is part of the `lint` dependency group, so the devcontainer installs it (`scripts/setup`) and Dependabot keeps it up to date. Run it with `uv run copier update`. The steps above are only needed for the first `copier copy`.
+
 ## Use
 
 ```bash
