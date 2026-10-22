@@ -119,7 +119,7 @@ fi
 grep -q 'bruno' "$dest/.pre-commit-config.yaml" || fail "pre-commit does not skip bruno/ folders"
 
 echo "== with a client"
-dest="$(render client -d client_package=pydemo -d copyright_year=2024 -d author_name="Jane Doe" -d author_email=jane@example.com)"
+dest="$(render client -d client_package=pydemo -d copyright_year=2024 -d author_name="Jane Doe" -d author_email=jane@example.com -d github_owner=janedoe)"
 check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
@@ -127,5 +127,11 @@ check_common "$dest"
 grep -qx "Copyright (c) 2024 Jane Doe" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"
 python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['project']; assert p['authors'] == p['maintainers'] == [{'name': 'Jane Doe', 'email': 'jane@example.com'}], p" \
   "$dest/pyproject.toml" || fail "pyproject.toml ignores author_name or author_email"
+python3 -c "import sys, tomllib; urls = tomllib.load(open(sys.argv[1], 'rb'))['project']['urls']; assert all(u.startswith('https://github.com/janedoe/') for u in urls.values()), urls" \
+  "$dest/pyproject.toml" || fail "pyproject.toml URLs ignore github_owner"
+for command in create-develop-pull-request create-main-pull-request; do
+  grep -q 'assigned to `janedoe`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
+  ! grep -q bastgau "$dest/.claude/commands/$command.md" || fail "$command.md still names bastgau"
+done
 
 echo "OK"
