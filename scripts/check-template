@@ -119,11 +119,13 @@ fi
 grep -q 'bruno' "$dest/.pre-commit-config.yaml" || fail "pre-commit does not skip bruno/ folders"
 
 echo "== with a client"
-dest="$(render client -d client_package=pydemo -d copyright_year=2024)"
+dest="$(render client -d client_package=pydemo -d copyright_year=2024 -d author_name="Jane Doe" -d author_email=jane@example.com)"
 check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
 [ -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration missing with a client"
-grep -qx "Copyright (c) 2024 Bastien Gautier" "$dest/LICENSE" || fail "LICENSE ignores copyright_year"
+grep -qx "Copyright (c) 2024 Jane Doe" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"
+python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['project']; assert p['authors'] == p['maintainers'] == [{'name': 'Jane Doe', 'email': 'jane@example.com'}], p" \
+  "$dest/pyproject.toml" || fail "pyproject.toml ignores author_name or author_email"
 
 echo "OK"

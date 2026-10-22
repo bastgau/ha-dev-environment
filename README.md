@@ -35,11 +35,12 @@ copier update                                  # later: pull in template changes
 
 Copier asks for the project variables (see `copier.yml`) and records the answers in `.copier-answers.yml`; commit that file. Local edits to generated files survive `copier update` (three-way merge).
 
-| Variable                                                             | Purpose                                                                                                                      |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                                                  |
-| `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes                    |
-| `copyright_year`                                                     | First year of the `LICENSE` notice (MIT, Bastien Gautier): the year the repository was created. Defaults to the current year |
+| Variable                                                             | Purpose                                                                                                                        |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `integration_domain`, `integration_name`, `repo_name`, `description` | Identity of the integration                                                                                                    |
+| `client_package`                                                     | Bundled API client under `custom_components/<domain>/` (optional) — enables the `client` lint/test scopes                      |
+| `author_name`, `author_email`                                        | Author and maintainer in `pyproject.toml`; `author_name` is also the copyright holder of `LICENSE`. Default to Bastien Gautier |
+| `copyright_year`                                                     | First year of the `LICENSE` notice (MIT): the year the repository was created. Defaults to the current year                    |
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 
