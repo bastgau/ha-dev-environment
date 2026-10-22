@@ -86,6 +86,8 @@ for label in labels:
     assert re.fullmatch(r"[0-9a-f]{6}", label["color"]), label
     assert label["description"], label
 PY
+# The LICENSE notice starts at the year Copier was asked for, the current year by default.
+grep -qx "Copyright (c) $(date +%Y) Bastien Gautier" "$dest/LICENSE" || fail "LICENSE does not carry the current year by default"
 for template in config.yml feature_request.md bug_report.md; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
@@ -117,10 +119,11 @@ fi
 grep -q 'bruno' "$dest/.pre-commit-config.yaml" || fail "pre-commit does not skip bruno/ folders"
 
 echo "== with a client"
-dest="$(render client -d client_package=pydemo)"
+dest="$(render client -d client_package=pydemo -d copyright_year=2024)"
 check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
 [ -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration missing with a client"
+grep -qx "Copyright (c) 2024 Bastien Gautier" "$dest/LICENSE" || fail "LICENSE ignores copyright_year"
 
 echo "OK"
