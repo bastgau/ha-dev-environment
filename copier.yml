@@ -81,3 +81,14 @@ copyright_year:
     Recorded once: on an existing repository, give it on the first update that asks
     (copier update -d copyright_year=<year>), or the current year is taken.
   default: "{{ '%Y' | strftime }}"
+
+coverage_fail_under:
+  type: int
+  help: >-
+    Minimum test coverage, in percent, that scripts/test (and so CI) requires of each
+    scope (client, integration). Lower it while a repository has few tests or none yet.
+  default: 95
+  validator: >-
+    {% if coverage_fail_under < 0 or coverage_fail_under > 100 %}
+    Give a percentage between 0 and 100
+    {% endif %}
