@@ -55,9 +55,10 @@ RUN echo 'eval "$(direnv hook bash)"' >> /etc/bash.bashrc \
 # Goes in ~/.bashrc because that is where the devcontainer theme sets PS1.
 RUN echo 'PS1='"'"'${VIRTUAL_ENV_PROMPT:+($VIRTUAL_ENV_PROMPT) }'"'"'"$PS1"' >> /home/vscode/.bashrc
 
-# uv's download cache lives on the `uv-cache` volume shared by every integration
-# (see devcontainer.json). A new volume copies its ownership from this directory, so
-# it must exist and belong to vscode; the parent too, or the mount would create
-# ~/.cache as root.
-RUN mkdir -p /home/vscode/.cache/uv \
-    && chown -R vscode:vscode /home/vscode/.cache
+# Two named volumes are mounted under the home directory (see devcontainer.json):
+# `uv-cache` on ~/.cache/uv, shared by every integration, and `claude-config-<repo>`
+# on ~/.claude. A new volume copies its ownership from the image directory it covers,
+# so these must exist and belong to vscode; ~/.cache too, or the mount would create it
+# as root.
+RUN mkdir -p /home/vscode/.cache/uv /home/vscode/.claude \
+    && chown -R vscode:vscode /home/vscode/.cache /home/vscode/.claude
