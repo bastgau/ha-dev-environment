@@ -39,6 +39,21 @@ repos:
         entry: uv run --no-sync docstring-linter
         language: system
         files: ^(custom_components|tests)/.+\.(py|pyi)$
+      # CI installs with `uv sync --frozen`, which does not notice a uv.lock
+      # left behind by an edit to pyproject.toml: this does.
+      - id: uv-lock-check
+        name: uv-lock-check
+        entry: uv lock --check
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+      # All of these are gitignored, but `git add --force` goes past that:
+      # environment files, the local Home Assistant config and its secrets, keys.
+      - id: forbid-files
+        name: forbid-files
+        entry: these files must not be committed
+        language: fail
+        files: (^|/)\.env$|^config/|(^|/)secrets\.yaml$|\.pem$|\.key$|(^|/)\.vscode/settings\.json$
       # Gets the message file as its argument. config-conventional is the
       # preset .commitlintrc.mjs extends; both pinned to the same release.
       - id: commitlint
@@ -59,6 +74,7 @@ repos:
       - id: check-yaml
       - id: check-executables-have-shebangs
         stages: [manual]
+      - id: check-toml
       - id: end-of-file-fixer
       # Keeps the two trailing spaces of a markdown line break, as the
       # devcontainer's editor settings do.
@@ -69,6 +85,16 @@ repos:
         args:
           - --branch=main
           - --branch=master
+      # Conflict markers a `copier update` left behind. It is not a git merge,
+      # which is all the hook looks for without --assume-in-merge.
+      - id: check-merge-conflict
+        args:
+          - --assume-in-merge
+      # Over 500 kB: mostly screenshots added to img/.
+      - id: check-added-large-files
+      # Two names that differ only by case collide on a Windows or macOS host.
+      - id: check-case-conflict
+      - id: detect-private-key
 
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1
