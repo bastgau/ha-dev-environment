@@ -3,6 +3,8 @@ name: "Check template"
 
 on:
   push:
+    branches:
+      - "**"
     tags-ignore:
       - "v*"
   pull_request:
