@@ -7,7 +7,8 @@
 #   - the shell scripts pass ShellCheck, and the generated ones parse;
 #   - pyproject.toml is valid TOML and `uv lock` resolves it (this is what
 #     caught a requires-python that homeassistant's own floor made unsatisfiable);
-#   - the lint/test scopes the scripts report match the project's shape.
+#   - the lint/test scopes the scripts report match the project's shape;
+#   - the commit-msg hook is installed and applies .commitlintrc.mjs.
 #
 # It does NOT run the linters or the tests: those need real integration code.
 # Usage: scripts/check-template   (needs copier and uv on PATH)
@@ -130,6 +131,24 @@ if command -v npx > /dev/null 2>&1; then
   grep -q '"a":   1' "$dest/custom_components/demo/pyclient/bruno/collection.json" || fail "scripts/lint repo reformatted a bruno/ folder"
 fi
 grep -q 'bruno' "$dest/.pre-commit-config.yaml" || fail "pre-commit does not skip bruno/ folders"
+# The commit-msg hook, run through the prek release pyproject.toml pins: `prek
+# install` (scripts/setup) must write it, and the commitlint release it pins
+# must load .commitlintrc.mjs, accept a message that follows it and reject one
+# that does not - for the rule's reason, not because the hook failed to start.
+prek="$(grep -o '"prek==[^"]*"' "$dest/pyproject.toml" | tr -d '"')"
+(cd "$dest" && git add -A && uvx --quiet --from "$prek" prek install > /dev/null) \
+  && [ -f "$dest/.git/hooks/commit-msg" ] || fail "prek install does not install the commit-msg hook"
+if command -v node > /dev/null 2>&1; then
+  printf 'chore: check the commit message hook\n' > "$work/good-message"
+  printf 'chore: too short\n' > "$work/bad-message"
+  (cd "$dest" && uvx --quiet --from "$prek" prek run commitlint --hook-stage commit-msg \
+    --commit-msg-filename "$work/good-message" > /dev/null) || fail "the commit-msg hook rejects a valid message"
+  rejected="$(cd "$dest" && uvx --quiet --from "$prek" prek run commitlint --hook-stage commit-msg \
+    --commit-msg-filename "$work/bad-message" 2>&1 || true)"
+  grep -q 'subject-min-length' <<< "$rejected" || fail "the commit-msg hook does not apply .commitlintrc.mjs"
+else
+  echo "node not found: commit-msg hook not run"
+fi
 
 echo "== with a client"
 dest="$(render client -d client_package=pydemo -d copyright_year=2024 -d author_name="Bastien Gautier" -d author_email=contact@bastiengautier.com -d github_owner=bastgau)"
