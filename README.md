@@ -63,7 +63,8 @@ Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on 
 
 Fixed choices shared by every repository: Prettier skips `card/` and every `bruno/` folder and leaves `.copier-answers.yml` alone; `tests/testing_config` and `tests/typing.py` are excluded from the linters when they exist; a `stale.yml` workflow closes inactive issues; `.github/ISSUE_TEMPLATE` holds the issue templates (bug report, feature proposal, blank issues disabled), whose labels all come from the labels list below.
 
-- This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
+- This repository's own CI (`check-template.yml`, which runs `scripts/check-template`) runs [ShellCheck](https://www.shellcheck.net) over the bash scripts of `template/scripts/` and `scripts/`, renders the template for a project with and without a client, parses the generated scripts and resolves the generated `pyproject.toml` with `uv lock`. It does not run the linters or the tests: they need real integration code.
+  ShellCheck is pinned through PyPI (`shellcheck-py`), so `scripts/check-template` reports locally what CI reports.
 
 ## Labels
 

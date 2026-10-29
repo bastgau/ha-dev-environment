@@ -4,7 +4,7 @@
 # client, one with) into temporary folders and checks what can be checked
 # without a real integration around it:
 #
-#   - the generated shell scripts parse;
+#   - the shell scripts pass ShellCheck, and the generated ones parse;
 #   - pyproject.toml is valid TOML and `uv lock` resolves it (this is what
 #     caught a requires-python that homeassistant's own floor made unsatisfiable);
 #   - the lint/test scopes the scripts report match the project's shape.
@@ -61,6 +61,19 @@ if command -v npx > /dev/null 2>&1; then
 else
   echo "npx not found: skipped"
 fi
+
+echo "== shellcheck"
+# The bash scripts, picked by their first line (a bash shebang, or the shell
+# directive of _common, which is sourced rather than run): a new script is
+# checked without being listed here, and the Python ones are left out. Run from
+# the folder holding scripts/, where `# shellcheck source=scripts/_common`
+# resolves. Pinned through PyPI, so that CI and a local run agree.
+shellcheck_scripts() {
+  (cd "$1" && grep -lE '^(#!/bin/bash|# shellcheck shell=bash.*)$' scripts/* \
+    | xargs uvx --quiet --from shellcheck-py==0.11.0.1 shellcheck --external-sources)
+}
+shellcheck_scripts "$root/template" || fail "ShellCheck reports problems in template/scripts"
+shellcheck_scripts "$root" || fail "ShellCheck reports problems in scripts"
 
 echo "== without a client"
 dest="$(render plain)"
@@ -130,6 +143,8 @@ python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['proj
 python3 -c "import sys, tomllib; urls = tomllib.load(open(sys.argv[1], 'rb'))['project']['urls']; assert all(u.startswith('https://github.com/bastgau/') for u in urls.values()), urls" \
   "$dest/pyproject.toml" || fail "pyproject.toml URLs ignore github_owner"
 for command in create-develop-pull-request create-main-pull-request; do
+  # The backticks are markdown, matched as they are: not a command substitution.
+  # shellcheck disable=SC2016
   grep -q 'assigned to `bastgau`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
   ! grep -q janedoe "$dest/.claude/commands/$command.md" || fail "$command.md still names the default owner"
 done
