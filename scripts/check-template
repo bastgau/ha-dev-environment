@@ -108,6 +108,9 @@ done
 grep -qx '\*\*Demo version:\*\*' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "bug_report.md does not name the integration"
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"
+grep -qx 'DOMAIN = "demo"' "$dest/tests/test_integration_loads.py" || fail "the first test does not name the domain"
+# No client: tests/ forbids an Args section, the one the client variant of conftest.py carries.
+! grep -q 'Args:' "$dest/tests/conftest.py" || fail "conftest.py documents arguments without a client"
 # Every label an issue template applies must be one the labels workflow creates.
 python3 - "$dest/.github" <<'PY' || fail "an issue template uses a label missing from labels.json"
 import json, pathlib, re, sys
@@ -119,14 +122,18 @@ for template in (root / "ISSUE_TEMPLATE").glob("*.md"):
     for name in re.findall(r'"([^"]+)"', used.group(1)):
         assert name in known, (template.name, name)
 PY
-# The bug report and tests/__init__.py belong to the repository once created: a
+# The bug report and the seeded tests belong to the repository once created: a
 # new render keeps them.
 printf 'local bug report\n' > "$dest/.github/ISSUE_TEMPLATE/bug_report.md"
-printf '"""Local tests package."""\n' > "$dest/tests/__init__.py"
+for seeded in __init__.py conftest.py test_integration_loads.py; do
+  printf '"""Local %s."""\n' "$seeded" > "$dest/tests/$seeded"
+done
 copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
   -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" "$root" "$dest"
 grep -qx 'local bug report' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "a new render overwrote bug_report.md"
-grep -qx '"""Local tests package."""' "$dest/tests/__init__.py" || fail "a new render overwrote tests/__init__.py"
+for seeded in __init__.py conftest.py test_integration_loads.py; do
+  grep -qx "\"\"\"Local $seeded.\"\"\"" "$dest/tests/$seeded" || fail "a new render overwrote tests/$seeded"
+done
 mkdir -p "$dest/card" "$dest/custom_components/demo/pyclient/bruno"
 printf '{"a":   1}\n' > "$dest/card/vendored.json"
 printf '{"a":   1}\n' > "$dest/custom_components/demo/pyclient/bruno/collection.json"
@@ -161,6 +168,8 @@ check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
 [ -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration missing with a client"
+# With a client, docstring-linter requires the conftest fixture's arguments to be documented.
+grep -q 'Args:' "$dest/tests/conftest.py" || fail "conftest.py does not document its arguments with a client"
 grep -qx "Copyright (c) 2024 Bastien Gautier" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"
 python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['project']; assert p['authors'] == p['maintainers'] == [{'name': 'Bastien Gautier', 'email': 'contact@bastiengautier.com'}], p" \
   "$dest/pyproject.toml" || fail "pyproject.toml ignores author_name or author_email"

@@ -7,11 +7,13 @@ _subdirectory: template
 _templates_suffix: .jinja
 # Seeded once, never overwritten: generated per repository (HA version dependent), or
 # owned by the repository once created (project-specific fields of the bug report,
-# a tests package some repositories vendor from Home Assistant core).
+# the tests some repositories vendor from Home Assistant core, a first test to start from).
 _skip_if_exists:
   - .devcontainer/requirements-default-config.txt
   - .github/ISSUE_TEMPLATE/bug_report.md
   - tests/__init__.py
+  - tests/conftest.py
+  - tests/test_integration_loads.py
 
 integration_domain:
   type: str
