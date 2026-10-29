@@ -2,6 +2,17 @@
 # Pre-commit configuration for a Home Assistant custom integration (HACS).
 # Scoped to `custom_components/` and `tests/`. hassfest and HACS validation run in
 # GitHub Actions (see .github/workflows/), not here.
+
+# `prek install` (scripts/setup) installs both hooks: the files at pre-commit,
+# the message against .commitlintrc.mjs at commit-msg.
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+# A hook that names no stage runs at pre-commit only, not a second time when
+# the message is checked.
+default_stages:
+  - pre-commit
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.0
@@ -27,6 +38,17 @@ repos:
         name: docstring-linter
         entry: uv run --no-sync docstring-linter
         language: system
+      # Gets the message file as its argument. config-conventional is the
+      # preset .commitlintrc.mjs extends; both pinned to the same release.
+      - id: commitlint
+        name: commitlint
+        entry: commitlint --edit
+        language: node
+        additional_dependencies:
+          - "@commitlint/cli@21.2.4"
+          - "@commitlint/config-conventional@21.2.4"
+        stages:
+          - commit-msg
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
