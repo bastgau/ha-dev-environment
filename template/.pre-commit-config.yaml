@@ -38,6 +38,7 @@ repos:
         name: docstring-linter
         entry: uv run --no-sync docstring-linter
         language: system
+        files: ^(custom_components|tests)/.+\.(py|pyi)$
       # Gets the message file as its argument. config-conventional is the
       # preset .commitlintrc.mjs extends; both pinned to the same release.
       - id: commitlint
@@ -59,7 +60,11 @@ repos:
       - id: check-executables-have-shebangs
         stages: [manual]
       - id: end-of-file-fixer
+      # Keeps the two trailing spaces of a markdown line break, as the
+      # devcontainer's editor settings do.
       - id: trailing-whitespace
+        args:
+          - --markdown-linebreak-ext=md
       - id: no-commit-to-branch
         args:
           - --branch=main
