@@ -39,6 +39,23 @@ repos:
         entry: uv run --no-sync docstring-linter
         language: system
         files: ^(custom_components|tests)/.+\.(py|pyi)$
+      # pylint and pyright get the staged files only, with the configuration CI
+      # uses. Each spends 4 to 8 s loading Home Assistant whatever the number of
+      # files, so one process each (require_serial). A caller in an unstaged
+      # file that the change breaks is not seen here: CI checks every file.
+      - id: pylint
+        name: pylint
+        entry: uv run --no-sync pylint
+        language: system
+        files: ^(custom_components|tests)/.+\.py$
+        require_serial: true
+      # Not tests/: pyrightconfig.json ignores it.
+      - id: pyright
+        name: pyright
+        entry: uv run --no-sync pyright
+        language: system
+        files: ^custom_components/.+\.(py|pyi)$
+        require_serial: true
       # CI installs with `uv sync --frozen`, which does not notice a uv.lock
       # left behind by an edit to pyproject.toml: this does.
       - id: uv-lock-check
