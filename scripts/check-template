@@ -106,6 +106,8 @@ for template in config.yml feature_request.md bug_report.md; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
 grep -qx '\*\*Demo version:\*\*' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "bug_report.md does not name the integration"
+grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
+  || fail "tests/__init__.py does not name the integration"
 # Every label an issue template applies must be one the labels workflow creates.
 python3 - "$dest/.github" <<'PY' || fail "an issue template uses a label missing from labels.json"
 import json, pathlib, re, sys
@@ -117,11 +119,14 @@ for template in (root / "ISSUE_TEMPLATE").glob("*.md"):
     for name in re.findall(r'"([^"]+)"', used.group(1)):
         assert name in known, (template.name, name)
 PY
-# The bug report belongs to the repository once created: a new render keeps it.
+# The bug report and tests/__init__.py belong to the repository once created: a
+# new render keeps them.
 printf 'local bug report\n' > "$dest/.github/ISSUE_TEMPLATE/bug_report.md"
+printf '"""Local tests package."""\n' > "$dest/tests/__init__.py"
 copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
   -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" "$root" "$dest"
 grep -qx 'local bug report' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "a new render overwrote bug_report.md"
+grep -qx '"""Local tests package."""' "$dest/tests/__init__.py" || fail "a new render overwrote tests/__init__.py"
 mkdir -p "$dest/card" "$dest/custom_components/demo/pyclient/bruno"
 printf '{"a":   1}\n' > "$dest/card/vendored.json"
 printf '{"a":   1}\n' > "$dest/custom_components/demo/pyclient/bruno/collection.json"

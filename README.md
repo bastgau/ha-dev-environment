@@ -82,7 +82,7 @@ A server that only one repository needs: add its entry to that repository's own 
 
 ## Layout
 
-`template/` mirrors the target repository. Files ending in `.jinja` are rendered; the others are copied as they are. `.devcontainer/requirements-default-config.txt` is seeded once and never overwritten (regenerate it with `scripts/update_requirements`). `.github/ISSUE_TEMPLATE/bug_report.md` is seeded once too: it names the integration, then belongs to the repository, which can add its own fields (the version of a device, a compatibility note).
+`template/` mirrors the target repository. Files ending in `.jinja` are rendered; the others are copied as they are. `.devcontainer/requirements-default-config.txt` is seeded once and never overwritten (regenerate it with `scripts/update_requirements`). `.github/ISSUE_TEMPLATE/bug_report.md` is seeded once too: it names the integration, then belongs to the repository, which can add its own fields (the version of a device, a compatibility note). So is `tests/__init__.py`, whose docstring names the integration: a repository that already has one, such as a tests package vendored from Home Assistant core, keeps it.
 
 ## Checked
 

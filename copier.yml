@@ -6,10 +6,12 @@ _min_copier_version: "9.0.0"
 _subdirectory: template
 _templates_suffix: .jinja
 # Seeded once, never overwritten: generated per repository (HA version dependent), or
-# owned by the repository once created (project-specific fields of the bug report).
+# owned by the repository once created (project-specific fields of the bug report,
+# a tests package some repositories vendor from Home Assistant core).
 _skip_if_exists:
   - .devcontainer/requirements-default-config.txt
   - .github/ISSUE_TEMPLATE/bug_report.md
+  - tests/__init__.py
 
 integration_domain:
   type: str
