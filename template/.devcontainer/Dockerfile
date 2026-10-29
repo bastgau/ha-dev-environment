@@ -54,3 +54,10 @@ RUN echo 'eval "$(direnv hook bash)"' >> /etc/bash.bashrc \
 # Prefixes the prompt with the active venv's name, as `source activate` would.
 # Goes in ~/.bashrc because that is where the devcontainer theme sets PS1.
 RUN echo 'PS1='"'"'${VIRTUAL_ENV_PROMPT:+($VIRTUAL_ENV_PROMPT) }'"'"'"$PS1"' >> /home/vscode/.bashrc
+
+# uv's download cache lives on the `uv-cache` volume shared by every integration
+# (see devcontainer.json). A new volume copies its ownership from this directory, so
+# it must exist and belong to vscode; the parent too, or the mount would create
+# ~/.cache as root.
+RUN mkdir -p /home/vscode/.cache/uv \
+    && chown -R vscode:vscode /home/vscode/.cache
