@@ -130,6 +130,8 @@ python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['proj
 python3 -c "import sys, tomllib; urls = tomllib.load(open(sys.argv[1], 'rb'))['project']['urls']; assert all(u.startswith('https://github.com/bastgau/') for u in urls.values()), urls" \
   "$dest/pyproject.toml" || fail "pyproject.toml URLs ignore github_owner"
 for command in create-develop-pull-request create-main-pull-request; do
+  # The backticks are markdown, matched as they are: not a command substitution.
+  # shellcheck disable=SC2016
   grep -q 'assigned to `bastgau`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
   ! grep -q janedoe "$dest/.claude/commands/$command.md" || fail "$command.md still names the default owner"
 done

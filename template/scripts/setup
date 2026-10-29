@@ -123,9 +123,7 @@ elif [ "$(prettier --version 2> /dev/null)" = "$PRETTIER_VERSION" ]; then
     echo -e "Prettier ${PRETTIER_VERSION} already installed. Skipping."
     echo -e "\n${BLUE}[prettier]${NC} ${GREEN}✓ Done.${NC}"
 else
-    npm install --global --no-fund --no-audit "prettier@${PRETTIER_VERSION}"
-
-    if [ $? -ne 0 ]; then
+    if ! npm install --global --no-fund --no-audit "prettier@${PRETTIER_VERSION}"; then
         echo -e "\n${BLUE}[prettier]${NC} ${RED}✗ npm failed to install Prettier.${NC}\n"
         exit 1
     fi
@@ -144,7 +142,7 @@ if [ -f "$VIMRC" ]; then
     echo -e "File .vimrc already exists. Skipping."
 else
     echo -e "Creating the file .vimrc"
-    cat > "$VIMRC" << 'EOF'
+    cat > "$VIMRC" << 'EOF' || { echo -e "\n${BLUE}[vimrc]${NC} ${RED}✗ Failed to create the file .vimrc.${NC}\n"; exit 1; }
 filetype on          " Enable file type detection
 syntax on            " Enable syntax highlighting
 set background=dark  " Adapt colors for dark background (ideal in PuTTY)
@@ -161,13 +159,7 @@ set softtabstop=4    " Tab = 4 spaces
 set mouse-=a
 set backspace=indent,eol,start
 EOF
-
-    if [ $? -eq 0 ]; then
-        echo -e "File .vimrc created successfully."
-    else
-        echo -e "\n${BLUE}[vimrc]${NC} ${RED}✗ Failed to create the file .vimrc.${NC}\n"
-        exit 1
-    fi
+    echo -e "File .vimrc created successfully."
 fi
 
 echo -e "\n${BLUE}[vimrc]${NC} ${GREEN}✓ Done.${NC}"
