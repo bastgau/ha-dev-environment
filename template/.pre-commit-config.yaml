@@ -72,10 +72,16 @@ repos:
       - id: check-json
         exclude: ^(\.vscode|\.devcontainer)/
       - id: check-yaml
+      - id: check-symlinks
       - id: check-executables-have-shebangs
         stages: [manual]
       - id: check-toml
       - id: end-of-file-fixer
+      # LF, as .gitattributes stores them: left to itself, the hook would keep
+      # whichever ending a file has most of.
+      - id: mixed-line-ending
+        args:
+          - --fix=lf
       # Keeps the two trailing spaces of a markdown line break, as the
       # devcontainer's editor settings do.
       - id: trailing-whitespace
