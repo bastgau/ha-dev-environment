@@ -4,33 +4,28 @@ Shared development environment for bastgau's Home Assistant custom integrations 
 
 ## Installation
 
-Copier is a Python command line tool (this template needs Copier 9.0.0 or newer, see `_min_copier_version` in `copier.yml`) and needs `git`. The steps are the same on Linux, macOS and Windows with WSL.
+Run these steps in a console on your host system, not in a container. The only prerequisites are `git` and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), which the generated repositories use as well:
+1. Install uv:
 
    ```bash
    curl -LsSf https://astral.sh/uv/install.sh | sh   # Linux, macOS, WSL
    # macOS with Homebrew: brew install uv
    ```
 
-2. Install Copier as a tool, so that it does not touch any project environment:
+2. From the root of the repository, generate the project. `uvx` runs Copier without installing it:
 
    ```bash
-   uv tool install copier
-   copier --version
+   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
    ```
 
-   `uvx --from copier copier <command>` runs it without installing anything. Any other way of installing a Python command line tool, such as `pipx install copier`, works too.
-
-To upgrade Copier later: `uv tool upgrade copier`.
-
-In a repository generated from this template, Copier is already there: it is part of the `lint` dependency group, so the devcontainer installs it (`scripts/setup`) and Dependabot keeps it up to date. Run it with `uv run copier update`. The steps above are only needed for the first `copier copy`.
+3. Start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it, Copier included: later template changes come with `uv run copier update`.
 
 ## Use
 
 ```bash
-copier copy gh:bastgau/ha-dev-environment .   # first time, from the repository root
-copier update                                  # later: pull in template changes
+uvx --from copier copier copy gh:bastgau/ha-dev-environment .   # first time, from the repository root
+uv run copier update                                             # later: pull in template changes
 ```
 
 Copier asks for the project variables (see `copier.yml`) and records the answers in `.copier-answers.yml`; commit that file. Local edits to generated files survive `copier update` (three-way merge).
@@ -48,7 +43,7 @@ Copier asks for the project variables (see `copier.yml`) and records the answers
 
 ## Adopting it in an existing repository
 
-Run `copier copy gh:bastgau/ha-dev-environment .` with `--overwrite` (the files already exist), then review `git diff`: anything you want to keep from the old version goes back as a local edit. Always copy from the `gh:` address and not from a local clone: the source is recorded in `.copier-answers.yml` and `copier update` uses it later.
+Run `uvx --from copier copier copy gh:bastgau/ha-dev-environment .` with `--overwrite` (the files already exist), then review `git diff`: anything you want to keep from the old version goes back as a local edit. Always copy from the `gh:` address and not from a local clone: the source is recorded in `.copier-answers.yml` and `copier update` uses it later.
 
 ## Updating
 
