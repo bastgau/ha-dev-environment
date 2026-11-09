@@ -21,7 +21,7 @@ Run these steps in a console on your host system, not in a container. The only p
    cd ha-<domain>
    ```
 
-4. From its root, generate the project. `uvx` runs Copier without installing it. Always use the `gh:` address and not a local clone: the source is recorded in `.copier-answers.yml`, and `copier update` uses it later.
+4. From its root, generate the project. `uvx` runs Copier without installing it. Always use the `gh:` address and not a local clone: the source is recorded in `.copier-answers.yml`.
 
    ```bash
    uvx --from copier copier copy gh:bastgau/ha-dev-environment .
