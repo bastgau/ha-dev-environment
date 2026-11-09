@@ -1,18 +1,36 @@
 # {{ integration_name }}
 
+[![Maintainer: {{ github_owner }}](https://img.shields.io/badge/maintainer-{{ github_owner }}-orange?logo=github&logoColor=%23959da5&labelColor=%232d333a)](https://github.com/{{ github_owner }})
+[![Made with Python](https://img.shields.io/badge/Made_with-Python-blue?style=flat&logo=python&logoColor=%23959da5&labelColor=%232d333a)](https://www.python.org/)
+[![Made for Home Assistant](https://img.shields.io/badge/Made_for-Homeassistant-blue?style=flat&logo=homeassistant&logoColor=%23959da5&labelColor=%232d333a)](https://www.home-assistant.io/)
+[![GitHub Release](https://img.shields.io/github/v/release/{{ github_owner }}/{{ repo_name }}?logo=github&logoColor=%23959da5&labelColor=%232d333a&color=%230e80c0)](https://github.com/{{ github_owner }}/{{ repo_name }}/releases)
+[![HACS validation](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-for-hacs.yml/badge.svg)](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-for-hacs.yml)
+[![HASSFEST validation](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-with-hassfest.yml/badge.svg)](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-with-hassfest.yml)
+
 {{ description }}
 
 ## Installation
 
-### HACS (custom repository)
+### Installation via HACS
 
-1. In HACS, open the menu and choose "Custom repositories".
-2. Add `https://github.com/{{ github_owner }}/{{ repo_name }}` with the category "Integration".
-3. Install {{ integration_name }}, then restart Home Assistant.
+1. Add this repository as a custom repository to HACS:
 
-### Manual
+[![Add Repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner={{ github_owner }}&repository={{ repo_name }}&category=Integration)
 
-Copy the `custom_components/{{ integration_domain }}` folder of the latest release into the `custom_components` folder of your Home Assistant configuration, then restart Home Assistant.
+2. Use HACS to install the integration.
+3. Restart Home Assistant.
+4. Set up the integration using the UI (once it has a config flow):
+
+[![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain={{ integration_domain }})
+
+### Manual Installation
+
+1. Download the integration files from the GitHub repository.
+2. Place the `{{ integration_domain }}` folder in the `custom_components` directory of Home Assistant.
+3. Restart Home Assistant.
+4. Set up the integration using the UI (once it has a config flow):
+
+[![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain={{ integration_domain }})
 
 ## Configuration
 
