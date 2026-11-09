@@ -53,12 +53,13 @@ check_common() {
   grep -qx 'name = "copier"' "$dest/uv.lock" || fail "copier is not in the locked environment (needed for uv run copier update)"
 }
 
-echo "== markdown formatting"
-# Generated markdown is copied as is into every repository, where `scripts/lint repo`
-# runs Prettier: anything not already formatted would be rewritten there.
+echo "== prettier formatting"
+# Generated files are copied as is into every repository, where `scripts/lint repo`
+# runs Prettier: anything not already formatted would be rewritten there. The whole
+# repository is checked (Prettier skips the .jinja files it cannot parse).
 if command -v npx > /dev/null 2>&1; then
-  (cd "$root" && npx --yes prettier@3.6.2 --check README.md "template/**/*.md") \
-    || fail "markdown files are not formatted with Prettier"
+  (cd "$root" && npx --yes prettier@3.6.2 --check .) \
+    || fail "files are not formatted with Prettier"
 else
   echo "npx not found: skipped"
 fi
