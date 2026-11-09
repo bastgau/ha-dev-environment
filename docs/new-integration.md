@@ -92,7 +92,16 @@ Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `r
 
 ## 5. Configure the GitHub repository
 
-Done by hand on the new repository (the template cannot do it). Once the generated files are pushed:
+Done by hand on the new repository (the template cannot do it). Once the generated files are pushed.
+
+The commands below use the GitHub CLI (`gh`), which the devcontainer provides. Log in first, with an account allowed to administer the repository, and check it:
+
+```bash
+gh auth login
+gh auth status
+```
+
+Each step can also be done in the GitHub web interface (see "Or:").
 
 ### 5.1 Description
 
