@@ -1,0 +1,35 @@
+# {{ integration_name }}
+
+{{ description }}
+
+## Installation
+
+### HACS (custom repository)
+
+1. In HACS, open the menu and choose "Custom repositories".
+2. Add `https://github.com/{{ github_owner }}/{{ repo_name }}` with the category "Integration".
+3. Install {{ integration_name }}, then restart Home Assistant.
+
+### Manual
+
+Copy the `custom_components/{{ integration_domain }}` folder of the latest release into the `custom_components` folder of your Home Assistant configuration, then restart Home Assistant.
+
+## Configuration
+
+Describe here how to set up the integration.
+
+## Development
+
+The repository comes with a devcontainer: open it in VS Code and choose "Reopen in Container". Then:
+
+```bash
+scripts/lint     # ruff, pylint, pyright, docstring-linter, Prettier
+scripts/test     # pytest with the coverage gate
+scripts/develop  # Home Assistant on http://localhost:8123, configuration in ./config
+```
+
+The scripts are described in [scripts/README.md](scripts/README.md). The development environment is managed by [ha-dev-environment](https://github.com/bastgau/ha-dev-environment): `uv run copier update` brings in its changes.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
