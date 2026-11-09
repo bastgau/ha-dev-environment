@@ -34,7 +34,7 @@ Run these steps in a console on your host system, not in a container. The only p
    | `integration_domain`                          | Name of the `custom_components/<domain>` folder. Lowercase letters, digits and underscores, starting with a letter |
    | `integration_name`                            | Display name                                                                                                       |
    | `repo_name`                                   | GitHub repository name, also the devcontainer workspace folder                                                     |
-   | `description`                                 | One line, goes to `pyproject.toml`. Reuse it as the GitHub description (section 5)                                    |
+   | `description`                                 | One line, goes to `pyproject.toml`. Reuse it as the GitHub description (section 5)                                 |
    | `client_package`                              | Name of the API client package bundled in `custom_components/<domain>/`, or empty when there is none               |
    | `github_owner`, `author_name`, `author_email` | **Give the real values**: the defaults are placeholders (`janedoe`, Jane Doe)                                      |
    | `copyright_year`                              | Year of creation (default: the current year)                                                                       |
