@@ -118,6 +118,12 @@ grep -qx '\*\*Demo version:\*\*' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" ||
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"
 grep -qx 'DOMAIN = "demo"' "$dest/tests/test_integration_loads.py" || fail "the first test does not name the domain"
+# The token file of the devcontainer holds a placeholder, is read by the container and never committed.
+grep -qx 'GITHUB_PERSONAL_ACCESS_TOKEN=xxxxx' "$dest/.devcontainer/.env" || fail ".devcontainer/.env does not hold the token placeholder"
+(cd "$dest" && git check-ignore -q .devcontainer/.env) || fail ".devcontainer/.env is not gitignored"
+# The variable is matched as it is written in devcontainer.json, not expanded.
+# shellcheck disable=SC2016
+grep -q 'env-file=${localWorkspaceFolder}/.devcontainer/.env"' "$dest/.devcontainer/devcontainer.json" || fail "devcontainer.json does not read .devcontainer/.env"
 # The integration skeleton, the README and the HACS file are generated for a new project.
 grep -qx 'DOMAIN = "demo"' "$dest/custom_components/demo/__init__.py" || fail "the integration skeleton does not name the domain"
 python3 - "$dest" <<'PY' || fail "manifest.json or hacs.json is not what hassfest and HACS expect"
@@ -151,6 +157,7 @@ printf 'local bug report\n' > "$dest/.github/ISSUE_TEMPLATE/bug_report.md"
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   printf '"""Local %s."""\n' "$seeded" > "$dest/tests/$seeded"
 done
+printf 'GITHUB_PERSONAL_ACCESS_TOKEN=local\n' > "$dest/.devcontainer/.env"
 for seeded in README.md hacs.json custom_components/demo/__init__.py custom_components/demo/manifest.json; do
   # JSON stays valid, in Prettier's own format: scripts/lint repo runs on this folder below.
   case "$seeded" in
@@ -164,6 +171,7 @@ grep -qx 'local bug report' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   grep -qx "\"\"\"Local $seeded.\"\"\"" "$dest/tests/$seeded" || fail "a new render overwrote tests/$seeded"
 done
+grep -qx 'GITHUB_PERSONAL_ACCESS_TOKEN=local' "$dest/.devcontainer/.env" || fail "a new render overwrote .devcontainer/.env"
 for seeded in README.md hacs.json custom_components/demo/__init__.py custom_components/demo/manifest.json; do
   grep -qxE "local $seeded|\{ \"local\": true \}" "$dest/$seeded" || fail "a new render overwrote $seeded"
 done
