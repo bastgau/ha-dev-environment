@@ -1,6 +1,6 @@
 # Development scripts
 
-Managed by [ha-dev-environment](https://github.com/bastgau/ha-dev-environment): change them there, then run `copier update`.
+Managed by [ha-dev-environment](https://github.com/bastgau/ha-dev-environment): change them there, then run `uvx --from copier copier update`.
 
 Every script resolves the repository root from its own location and reads the project variables (integration domain, optional bundled client, Prettier exclusions) from `.devcontainer/.common-env`, so it can be run from anywhere.
 
