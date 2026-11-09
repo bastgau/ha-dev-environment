@@ -1,31 +1,16 @@
 # ha-dev-environment
 
-Shared development environment for bastgau's Home Assistant custom integrations (`ha-pi-hole-v6`, `ha-device-link-tools`, `ha-betaseries`, `ha-clouding`): devcontainer, `uv` project layout, lint/test scripts, GitHub workflows, pre-commit. It is a [Copier](https://copier.readthedocs.io) template.
+Shared development environment for bastgau's Home Assistant custom integrations: devcontainer, `uv` project layout, lint/test scripts, GitHub workflows, pre-commit. It is a [Copier](https://copier.readthedocs.io) template.
 
 ## Installation
 
-Run these steps in a console on your host system, not in a container. The only prerequisites are `git` and [uv](https://docs.astral.sh/uv/getting-started/installation/).
-
-1. Install uv:
-
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh   # Linux, macOS, WSL
-   # macOS with Homebrew: brew install uv
-   ```
-
-2. From the root of the repository, generate the project. `uvx` runs Copier without installing it:
-
-   ```bash
-   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
-   ```
-
-3. Start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it, Copier included: later template changes come with `uv run copier update`.
+The installation, from a console on your host system, and the creation of a new integration repository are described in [docs/new-integration.md](docs/new-integration.md).
 
 ## Use
 
 ```bash
 uvx --from copier copier copy gh:bastgau/ha-dev-environment .   # first time, from the repository root
-uv run copier update                                             # later: pull in template changes
+uvx --from copier copier update                                  # later: pull in template changes
 ```
 
 Copier asks for the project variables (see `copier.yml`) and records the answers in `.copier-answers.yml`; commit that file. Local edits to generated files survive `copier update` (three-way merge).
@@ -47,11 +32,12 @@ Run `uvx --from copier copier copy gh:bastgau/ha-dev-environment .` with `--over
 
 ## Updating
 
-The first `copier update` to a version that renders `LICENSE` asks for `copyright_year` (with `--defaults`, the current year is taken): give the year the repository was created, once, for instance `uv run copier update -d copyright_year=2024`. It is recorded in `.copier-answers.yml`. The same goes for `github_owner`, `author_name` and `author_email`, whose defaults are placeholders (`janedoe`, Jane Doe): give the real values on that first update, for instance `uv run copier update -d copyright_year=2024 -d github_owner=bastgau -d author_name="Bastien Gautier" -d author_email=contact@bastiengautier.com`. Where the existing `LICENSE` carries another year (2026 in `ha-custom-universal-media-player`, `ha-pi-hole-v6` and `ha-cup-component`), that update leaves a conflict in `LICENSE`: keep the `after updating` side. Creation years, from each repository's first commit: `ha-custom-universal-media-player` 2024, `ha-pi-hole-v6` and `ha-cup-component` 2025, `ha-clouding`, `ha-betaseries`, `ha-device-link-tools` and `ha-globe-radio` 2026.
+`uvx --from copier copier update`, from the root of the target repository, replays the template changes since the version recorded in `.copier-answers.yml` and keeps your local edits (three-way merge). Resolve any conflict, run `scripts/lint` and `scripts/test`, commit.
 
-The update to the version that seeds `tests/` asks for `coverage_fail_under` too (95 with `--defaults`). A repository with few tests or none fails that floor in CI as soon as `tests/` exists: give it a floor it meets for now, for instance `uv run copier update -d coverage_fail_under=0`, and raise it as tests are written (`uv run copier update -d coverage_fail_under=95`, or edit `.copier-answers.yml` then `uv run copier update`). Without tests today: `ha-pi-hole-v6`, `ha-clouding`, `ha-globe-radio` and `ha-cup-component`.
+An update can ask for variables that did not exist when the repository was generated (see `copier.yml`; with `--defaults`, each takes its default). Give the real values once with `-d name=value`: they are recorded in `.copier-answers.yml`.
 
-`copier update` in the target repository replays the template changes since the version recorded in `.copier-answers.yml` and keeps your local edits (three-way merge). Resolve any conflict, run `scripts/lint` and `scripts/test`, commit.
+- `copyright_year`, `github_owner`, `author_name` and `author_email`: the defaults are placeholders (the current year, `janedoe`, Jane Doe). For instance `uvx --from copier copier update -d copyright_year=<year> -d github_owner=<owner> -d author_name="<name>" -d author_email=<email>`. Where the existing `LICENSE` carries another year, the update leaves a conflict in `LICENSE`: keep the `after updating` side.
+- `coverage_fail_under` (95 by default): a repository with few tests or none fails that floor in CI as soon as `tests/` exists. Give it a floor it meets for now, for instance `-d coverage_fail_under=0`, and raise it as tests are written (`-d coverage_fail_under=95`, or edit `.copier-answers.yml` then update again).
 
 Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on this repository. Without a tag it falls back to `HEAD`, and `copier check-update` cannot tell anything. So: **tag a release (`vX.Y.Z`) after merging a template change**. Verified in a scratch copy: with `v0.1.0` recorded and `v0.2.0` published, `copier check-update --quiet` exits with status 2.
 
@@ -84,4 +70,4 @@ A server that only one repository needs: add its entry to that repository's own 
 
 ## Checked
 
-Rendered for `ha-device-link-tools` (no client) and `ha-betaseries` (with client) in a scratch copy: `uv lock`, `scripts/lint` (all scopes) and `scripts/test` pass, and `copier update` applies a template change while keeping a local edit. Not checked: the GitHub workflows themselves, a devcontainer rebuild, Dependabot's `uv` support.
+Rendered for a project without a client and for one with a client in a scratch copy: `uv lock`, `scripts/lint` (all scopes) and `scripts/test` pass, and `copier update` applies a template change while keeping a local edit. Not checked: the GitHub workflows themselves, a devcontainer rebuild, Dependabot's `uv` support.

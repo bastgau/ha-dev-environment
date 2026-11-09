@@ -2,22 +2,39 @@
 
 How to create the repository of a new Home Assistant custom integration from this template. For adopting the template in a repository that already exists, see "Adopting it in an existing repository" in the [README](../README.md).
 
-## Prerequisites
+## Installation
 
-`git` and [uv](https://docs.astral.sh/uv/getting-started/installation/), installed on your host system. See "Installation" in the [README](../README.md). Everything else is in the devcontainer.
+Run these steps in a console on your host system, not in a container. The only prerequisites are `git` and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+
+1. Install uv:
+
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh   # Linux, macOS, WSL
+   # macOS with Homebrew: brew install uv
+   ```
+
+2. From the root of the repository, generate the project. `uvx` runs Copier without installing it:
+
+   ```bash
+   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
+   ```
+
+3. Start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it: later template changes come with `uvx --from copier copier update`.
+
+The repository must exist before step 2: section 1 below creates it and lists the questions Copier asks.
 
 ## 1. Create the repository
 
 1. Create an empty repository on GitHub. Name it `ha-<domain>`, with underscores of the domain written as dashes: this is the default of `repo_name` in `copier.yml`.
-2. Clone it and generate the project from the template, from the repository root. Always use the `gh:` address and not a local clone: the source is recorded in `.copier-answers.yml`, and `copier update` uses it later.
+2. Clone it:
 
    ```bash
    git clone git@github.com:<owner>/ha-<domain>.git
    cd ha-<domain>
-   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
    ```
 
-3. Answer the questions (see `copier.yml`):
+3. Run steps 1 and 2 of "Installation" above from its root. Always use the `gh:` address and not a local clone: the source is recorded in `.copier-answers.yml`, and `copier update` uses it later.
+4. Answer the questions Copier asks (see `copier.yml`):
 
    | Variable                                      | What to give                                                                                                       |
    | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -33,7 +50,7 @@ How to create the repository of a new Home Assistant custom integration from thi
 
    Having a `client_package` enables the `client` lint and test scopes. Without one, there is a single `integration` scope.
 
-4. Commit `.copier-answers.yml` along with the generated files: `copier update` needs it.
+5. Commit `.copier-answers.yml` along with the generated files: `copier update` needs it.
 
 ## 2. What the template generates
 
@@ -65,7 +82,7 @@ Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `r
 
 ## 4. Start the development environment
 
-1. Open the repository in VS Code and choose "Reopen in Container". `postCreateCommand` runs `scripts/setup`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
+1. The devcontainer (step 3 of "Installation") runs `scripts/setup` through `postCreateCommand`: `scripts/setup`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
 2. If `git` does not know your name and email yet, run `scripts/setup` once in a terminal (the question in the container gives up after a minute).
 3. Check that everything is green, then commit:
 
@@ -74,7 +91,7 @@ Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `r
    scripts/test
    ```
 
-   If `scripts/test` fails on the coverage floor because the repository has few or no tests, lower it for now: `uv run copier update -d coverage_fail_under=0`, and raise it as tests are written.
+   If `scripts/test` fails on the coverage floor because the repository has few or no tests, lower it for now: `uvx --from copier copier update -d coverage_fail_under=0`, and raise it as tests are written.
 
 4. `scripts/develop` starts Home Assistant against the gitignored `./config` (port 8123 is forwarded).
 
@@ -139,7 +156,7 @@ Releases are made from the GitHub UI: publishing a release with a tag such as `v
 
 ## 7. Staying in step with the template
 
-- `template-drift.yml` runs every Monday and turns red when a newer template tag exists. Update with `uv run copier update`, resolve conflicts, run `scripts/lint` and `scripts/test`, commit.
+- `template-drift.yml` runs every Monday and turns red when a newer template tag exists. Update with `uvx --from copier copier update`, resolve conflicts, run `scripts/lint` and `scripts/test`, commit.
 - Template changes are published by tags `vX.Y.Z` on `ha-dev-environment`. Without a tag, Copier cannot tell what is newer.
 - Do not edit the managed scripts and workflows in the project to change them everywhere: change them in `ha-dev-environment` and release. Local edits survive `copier update` (three-way merge) but can conflict.
 
