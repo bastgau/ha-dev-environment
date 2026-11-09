@@ -82,7 +82,7 @@ Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `r
 
 ## 4. Start the development environment
 
-1. The devcontainer (step 3 of "Installation") runs `scripts/setup` through `postCreateCommand`: `scripts/setup`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
+1. The devcontainer (step 3 of "Installation") runs `scripts/setup` through `postCreateCommand`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
 2. If `git` does not know your name and email yet, run `scripts/setup` once in a terminal (the question in the container gives up after a minute).
 3. Check that everything is green, then commit:
 
