@@ -2,7 +2,7 @@
 
 How to create the repository of a new Home Assistant custom integration from this template. For adopting the template in a repository that already exists, see "Adopting it in an existing repository" in the [README](../README.md).
 
-## Installation
+## 1. Create the repository
 
 Run these steps in a console on your host system, not in a container. The only prerequisites are `git` and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
@@ -13,35 +13,28 @@ Run these steps in a console on your host system, not in a container. The only p
    # macOS with Homebrew: brew install uv
    ```
 
-2. From the root of the repository, generate the project. `uvx` runs Copier without installing it:
-
-   ```bash
-   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
-   ```
-
-3. Start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it: later template changes come with `uvx --from copier copier update`.
-
-The repository must exist before step 2: section 1 below creates it and lists the questions Copier asks.
-
-## 1. Create the repository
-
-1. Create an empty repository on GitHub. Name it `ha-<domain>`, with underscores of the domain written as dashes: this is the default of `repo_name` in `copier.yml`.
-2. Clone it:
+2. Create an empty repository on GitHub. Name it `ha-<domain>`, with underscores of the domain written as dashes: this is the default of `repo_name` in `copier.yml`.
+3. Clone it:
 
    ```bash
    git clone git@github.com:<owner>/ha-<domain>.git
    cd ha-<domain>
    ```
 
-3. Run steps 1 and 2 of "Installation" above from its root. Always use the `gh:` address and not a local clone: the source is recorded in `.copier-answers.yml`, and `copier update` uses it later.
-4. Answer the questions Copier asks (see `copier.yml`):
+4. From its root, generate the project. `uvx` runs Copier without installing it. Always use the `gh:` address and not a local clone: the source is recorded in `.copier-answers.yml`, and `copier update` uses it later.
+
+   ```bash
+   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
+   ```
+
+   Copier asks for the project variables (see `copier.yml`):
 
    | Variable                                      | What to give                                                                                                       |
    | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
    | `integration_domain`                          | Name of the `custom_components/<domain>` folder. Lowercase letters, digits and underscores, starting with a letter |
    | `integration_name`                            | Display name                                                                                                       |
    | `repo_name`                                   | GitHub repository name, also the devcontainer workspace folder                                                     |
-   | `description`                                 | One line, goes to `pyproject.toml`. Reuse it as the GitHub description (step 5)                                    |
+   | `description`                                 | One line, goes to `pyproject.toml`. Reuse it as the GitHub description (section 5)                                    |
    | `client_package`                              | Name of the API client package bundled in `custom_components/<domain>/`, or empty when there is none               |
    | `github_owner`, `author_name`, `author_email` | **Give the real values**: the defaults are placeholders (`janedoe`, Jane Doe)                                      |
    | `copyright_year`                              | Year of creation (default: the current year)                                                                       |
@@ -50,7 +43,9 @@ The repository must exist before step 2: section 1 below creates it and lists th
 
    Having a `client_package` enables the `client` lint and test scopes. Without one, there is a single `integration` scope.
 
-5. Commit `.copier-answers.yml` along with the generated files: `copier update` needs it.
+   Commit `.copier-answers.yml` along with the generated files: `copier update` needs it.
+
+5. Start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it: later template changes come with `uvx --from copier copier update`.
 
 ## 2. What the template generates
 
@@ -82,7 +77,7 @@ Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `r
 
 ## 4. Start the development environment
 
-1. The devcontainer (step 3 of "Installation") runs `scripts/setup` through `postCreateCommand`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
+1. The devcontainer (step 5 of section 1) runs `scripts/setup` through `postCreateCommand`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
 2. If `git` does not know your name and email yet, run `scripts/setup` once in a terminal (the question in the container gives up after a minute).
 3. Check that everything is green, then commit:
 
