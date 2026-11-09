@@ -26,7 +26,6 @@ render() {
   shift
   local dest="$work/$name"
   mkdir -p "$dest/custom_components/demo" "$dest/tests"
-  touch "$dest/README.md"
   git -C "$dest" init -q
   copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
     -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" \
@@ -119,6 +118,20 @@ grep -qx '\*\*Demo version:\*\*' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" ||
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"
 grep -qx 'DOMAIN = "demo"' "$dest/tests/test_integration_loads.py" || fail "the first test does not name the domain"
+# The integration skeleton, the README and the HACS file are generated for a new project.
+grep -qx 'DOMAIN = "demo"' "$dest/custom_components/demo/__init__.py" || fail "the integration skeleton does not name the domain"
+python3 - "$dest" <<'PY' || fail "manifest.json or hacs.json is not what hassfest and HACS expect"
+import json, pathlib, sys
+dest = pathlib.Path(sys.argv[1])
+manifest = json.load(open(dest / "custom_components/demo/manifest.json"))
+for key in ("domain", "name", "codeowners", "documentation", "issue_tracker", "version"):
+    assert manifest.get(key), key
+assert manifest["domain"] == "demo" and manifest["name"] == "Demo", manifest
+assert manifest["codeowners"] == ["@janedoe"], manifest
+assert json.load(open(dest / "hacs.json"))["name"] == "Demo"
+PY
+grep -qx '# Demo' "$dest/README.md" || fail "README.md does not name the integration"
+grep -q 'Demo integration' "$dest/README.md" || fail "README.md does not carry the description"
 # No client: tests/ forbids an Args section, the one the client variant of conftest.py carries.
 ! grep -q 'Args:' "$dest/tests/conftest.py" || fail "conftest.py documents arguments without a client"
 # Every label an issue template applies must be one the labels workflow creates.
@@ -138,11 +151,21 @@ printf 'local bug report\n' > "$dest/.github/ISSUE_TEMPLATE/bug_report.md"
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   printf '"""Local %s."""\n' "$seeded" > "$dest/tests/$seeded"
 done
+for seeded in README.md hacs.json custom_components/demo/__init__.py custom_components/demo/manifest.json; do
+  # JSON stays valid, in Prettier's own format: scripts/lint repo runs on this folder below.
+  case "$seeded" in
+    *.json) printf '{ "local": true }\n' > "$dest/$seeded" ;;
+    *) printf 'local %s\n' "$seeded" > "$dest/$seeded" ;;
+  esac
+done
 copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
   -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" "$root" "$dest"
 grep -qx 'local bug report' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "a new render overwrote bug_report.md"
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   grep -qx "\"\"\"Local $seeded.\"\"\"" "$dest/tests/$seeded" || fail "a new render overwrote tests/$seeded"
+done
+for seeded in README.md hacs.json custom_components/demo/__init__.py custom_components/demo/manifest.json; do
+  grep -qxE "local $seeded|\{ \"local\": true \}" "$dest/$seeded" || fail "a new render overwrote $seeded"
 done
 mkdir -p "$dest/card" "$dest/custom_components/demo/pyclient/bruno"
 printf '{"a":   1}\n' > "$dest/card/vendored.json"

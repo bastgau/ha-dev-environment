@@ -50,11 +50,21 @@ Checked in `template/` on `main`:
 - **Tests**: `tests/__init__.py`, `tests/conftest.py` and `tests/test_integration_loads.py` are seeded once and then belong to the repository.
 - `LICENSE` (MIT, from `author_name` and `copyright_year`).
 
-Not generated (no such file in `template/`): the integration code itself (`custom_components/<domain>/`, with its `manifest.json`), a `README.md`, and a `hacs.json`. You write them.
+Also generated, once (`_skip_if_exists` in `copier.yml`: a repository that already has them keeps its own, and later `copier update` runs never touch them):
 
-## 3. Create the integration skeleton
+- `README.md`: installation (HACS custom repository or manual), a configuration placeholder, development, license.
+- `hacs.json` (`name`, `render_readme`).
+- The integration skeleton `custom_components/<domain>/`: `__init__.py` (a docstring and `DOMAIN`) and `manifest.json` (`domain`, `name`, `codeowners`, `documentation`, `issue_tracker`, `version`, and placeholders to adjust: `config_flow` false, `integration_type` `service`, `iot_class` `cloud_polling`).
 
-Create `custom_components/<domain>/` with at least `__init__.py` and `manifest.json`. The `release` workflow rewrites the `version` key of `manifest.json` from the tag of the GitHub release, and zips that folder, so the folder name must be exactly `integration_domain`. `validate-with-hassfest` and `validate-for-hacs` check the result in CI, so `manifest.json` and the HACS metadata must satisfy them (not checked here: the exact required fields, see the Home Assistant and HACS documentation).
+## 3. Adjust the generated integration
+
+The skeleton makes `scripts/lint` and `scripts/test` pass as it is; the first test checks Home Assistant finds it. Then make it yours:
+
+1. In `manifest.json`: set `iot_class`, `integration_type`, `requirements` and, with a config flow, `config_flow` (and add `config_flow.py`). Keep `version` as it is: the `release` workflow rewrites it from the tag of the GitHub release and zips the folder, so the folder name must stay exactly `integration_domain`.
+2. In `README.md`: fill in the "Configuration" section.
+3. Write the integration code in `custom_components/<domain>/`.
+
+Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `repo`) passes and `scripts/test` passes (1 test, 100 % coverage). Not run here: `validate-with-hassfest` and `validate-for-hacs` (they run in GitHub Actions), so whether they accept the generated `manifest.json` and `hacs.json` as they are is not verified: check the first CI run.
 
 ## 4. Start the development environment
 
@@ -140,7 +150,7 @@ Releases are made from the GitHub UI: publishing a release with a tag such as `v
 
 - [ ] Repository created, `copier copy gh:bastgau/ha-dev-environment .` run with real `github_owner`, `author_name`, `author_email`
 - [ ] `.copier-answers.yml` committed
-- [ ] `custom_components/<domain>/` with `manifest.json` created
+- [ ] Generated `manifest.json` adjusted (`iot_class`, `integration_type`, `requirements`), `README.md` completed
 - [ ] Devcontainer opens, `scripts/lint` and `scripts/test` pass
 - [ ] Description set
 - [ ] Topics added
