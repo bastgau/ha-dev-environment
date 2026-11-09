@@ -52,7 +52,7 @@ Checked in `template/` on `main`:
 
 Also generated, once (`_skip_if_exists` in `copier.yml`: a repository that already has them keeps its own, and later `copier update` runs never touch them):
 
-- `README.md`: installation (HACS custom repository or manual), a configuration placeholder, development, license.
+- `README.md`: the badges of `ha-feedparser` (maintainer, Python, Home Assistant, release, HACS and hassfest validation), installation through HACS or by hand with the "Add Repository" and "Add Integration" buttons, a configuration placeholder, development, license. The "Add Integration" button only works once the integration has a config flow.
 - `hacs.json` (`name`, `render_readme`).
 - The integration skeleton `custom_components/<domain>/`: `__init__.py` (a docstring and `DOMAIN`) and `manifest.json` (`domain`, `name`, `codeowners`, `documentation`, `issue_tracker`, `version`, and placeholders to adjust: `config_flow` false, `integration_type` `service`, `iot_class` `cloud_polling`).
 
@@ -97,12 +97,12 @@ Or: repository page, gear icon next to "About", Description.
 
 ### 5.2 Topics
 
-Add topics so the repository can be found. Suggested base set (to adapt, assumption, not defined by the template): `home-assistant`, `homeassistant`, `custom-component`, `hacs`, plus one or two specific to the service or device (for instance the name of the service). Topics are lowercase, with letters, digits and dashes.
+Add topics so the repository can be found. Base set, taken from the topics of `ha-feedparser`: `hacs`, `hacs-integration`, `home-assistant`, `homeassistant`. Add the ones specific to the service or device (`ha-feedparser` has `feedparser`, `rss`, `rss-feed`, `rss-reader`). Topics are lowercase, with letters, digits and dashes.
 
 ```bash
 gh repo edit <owner>/ha-<domain> \
+  --add-topic hacs --add-topic hacs-integration \
   --add-topic home-assistant --add-topic homeassistant \
-  --add-topic custom-component --add-topic hacs \
   --add-topic <specific-topic>
 ```
 
