@@ -60,7 +60,7 @@ To add or change a label: edit `template/.github/labels.json`, merge, release, t
 
 ## MCP servers
 
-`template/.mcp.json` declares the GitHub MCP server shared by every repository; the token is read from the `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable, which the devcontainer does not set: define it in the container's environment. Nothing secret is committed.
+`template/.mcp.json` declares the GitHub MCP server shared by every repository; the token is read from the `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable, which the devcontainer takes from `.devcontainer/.env`. That file is seeded once with the placeholder `xxxxx` (replace it with your token) and is gitignored, so nothing secret is committed.
 
 A server that only one repository needs: add its entry to that repository's own `.mcp.json`. `copier update` merges it with the template's changes and keeps it (checked on a scratch copy: a local `chrome-devtools` entry survived a template change to the `github` entry). A conflict can only happen if both sides edit the same lines; resolve it like any merge conflict. A server tied to your machine (a local address, a personal path) does not belong in the repository at all: add it with `claude mcp add --scope local` or `--scope user` instead.
 

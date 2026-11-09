@@ -45,7 +45,7 @@ Run these steps in a console on your host system, not in a container. The only p
 
    Commit `.copier-answers.yml` along with the generated files: `copier update` needs it.
 
-5. Start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it: later template changes come with `uvx --from copier copier update`.
+5. Put your GitHub token in `.devcontainer/.env` (`GITHUB_PERSONAL_ACCESS_TOKEN=...`; the file is gitignored), then start the devcontainer (VS Code, "Reopen in Container"). Everything else is in it: later template changes come with `uvx --from copier copier update`.
 
 ## 2. What the template generates
 
