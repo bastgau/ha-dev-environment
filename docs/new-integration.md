@@ -75,7 +75,7 @@ The skeleton makes `scripts/lint` and `scripts/test` pass as it is; the first te
 
 Checked on a rendered project: `scripts/lint` (all of `integration`, `tests`, `repo`) passes and `scripts/test` passes (1 test, 100 % coverage). Not run here: `validate-with-hassfest` and `validate-for-hacs` (they run in GitHub Actions), so whether they accept the generated `manifest.json` and `hacs.json` as they are is not verified: check the first CI run.
 
-## 4. Start the development environment
+## 4. Start the Home Assistant development environment
 
 1. The devcontainer (step 5 of section 1) runs `scripts/setup` through `postCreateCommand`: `uv sync`, the `default_config` packages, the git hooks (`prek install`: pre-commit and commit-msg).
 2. If `git` does not know your name and email yet, run `scripts/setup` once in a terminal (the question in the container gives up after a minute).
