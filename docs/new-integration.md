@@ -4,10 +4,7 @@ How to create the repository of a new Home Assistant custom integration from thi
 
 ## Prerequisites
 
-- `git`, and a GitHub account that can create repositories.
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) and Copier 9.0.0 or newer (`uv tool install copier`). See "Installation" in the [README](../README.md).
-- For the devcontainer: Docker and VS Code with the Dev Containers extension. The container forwards `GITHUB_PERSONAL_ACCESS_TOKEN` from your host to the GitHub MCP server (`remoteEnv` in `devcontainer.json`), so export it on the host if you use Claude Code in the container.
-- Optional, for the GitHub settings below from a terminal: the [GitHub CLI](https://cli.github.com) (`gh`), authenticated. Everything can also be done in the GitHub web interface.
+`git` and [uv](https://docs.astral.sh/uv/getting-started/installation/), installed on your host system. See "Installation" in the [README](../README.md). Everything else is in the devcontainer.
 
 ## 1. Create the repository
 
@@ -17,7 +14,7 @@ How to create the repository of a new Home Assistant custom integration from thi
    ```bash
    git clone git@github.com:<owner>/ha-<domain>.git
    cd ha-<domain>
-   copier copy gh:bastgau/ha-dev-environment .
+   uvx --from copier copier copy gh:bastgau/ha-dev-environment .
    ```
 
 3. Answer the questions (see `copier.yml`):
@@ -148,7 +145,7 @@ Releases are made from the GitHub UI: publishing a release with a tag such as `v
 
 ## Quick checklist
 
-- [ ] Repository created, `copier copy gh:bastgau/ha-dev-environment .` run with real `github_owner`, `author_name`, `author_email`
+- [ ] Repository created, `uvx --from copier copier copy gh:bastgau/ha-dev-environment .` run with real `github_owner`, `author_name`, `author_email`
 - [ ] `.copier-answers.yml` committed
 - [ ] Generated `manifest.json` adjusted (`iot_class`, `integration_type`, `requirements`), `README.md` completed
 - [ ] Devcontainer opens, `scripts/lint` and `scripts/test` pass
