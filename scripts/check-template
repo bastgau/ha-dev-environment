@@ -126,6 +126,7 @@ grep -qx 'GITHUB_PERSONAL_ACCESS_TOKEN=xxxxx' "$dest/.devcontainer/.env" || fail
 # shellcheck disable=SC2016
 grep -q 'env-file=${localWorkspaceFolder}/.devcontainer/.env"' "$dest/.devcontainer/devcontainer.json" || fail "devcontainer.json does not read .devcontainer/.env"
 # The integration skeleton, the README and the HACS file are generated for a new project.
+grep -qx '    custom_components.demo: debug' "$dest/template/configuration.yaml" || fail "template/configuration.yaml does not log the integration in debug"
 grep -qx 'DOMAIN = "demo"' "$dest/custom_components/demo/__init__.py" || fail "the integration skeleton does not name the domain"
 python3 - "$dest" <<'PY' || fail "manifest.json or hacs.json is not what hassfest and HACS expect"
 import json, pathlib, sys
