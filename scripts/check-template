@@ -82,6 +82,7 @@ check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["integration", "tests"]' ] || fail "unexpected lint scopes (plain)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["integration"]' ] || fail "unexpected test scopes (plain)"
 [ ! -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration generated without a client"
+[ -z "$(find "$dest/custom_components" "$dest/tests" -mindepth 2 -type d ! -name __pycache__)" ] || fail "client folders generated without a client"
 
 # Fixed choices of the template, checked on the rendered project.
 for workflow in lint test; do
@@ -209,6 +210,12 @@ check_common "$dest"
 [ "$("$dest/scripts/lint" --list-scopes)" = '["client", "integration", "tests"]' ] || fail "unexpected lint scopes (client)"
 [ "$("$dest/scripts/test" --list-scopes)" = '["client", "integration"]' ] || fail "unexpected test scopes (client)"
 [ -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration missing with a client"
+# With a client, its package and its first test are generated, the test outside Home Assistant.
+for client_file in custom_components/demo/pydemo/__init__.py tests/demo/pydemo/__init__.py tests/demo/pydemo/test_integration_loads.py; do
+  [ -f "$dest/$client_file" ] || fail "$client_file missing with a client"
+done
+grep -q 'custom_components.demo.pydemo' "$dest/tests/demo/pydemo/test_integration_loads.py" || fail "the client test does not name the client package"
+! grep -q 'HomeAssistant' "$dest/tests/demo/pydemo/test_integration_loads.py" || fail "the client test starts Home Assistant"
 # With a client, docstring-linter requires the conftest fixture's arguments to be documented.
 grep -q 'Args:' "$dest/tests/conftest.py" || fail "conftest.py does not document its arguments with a client"
 grep -qx "Copyright (c) 2024 Bastien Gautier" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"

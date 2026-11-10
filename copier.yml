@@ -20,6 +20,9 @@ _skip_if_exists:
   - tests/__init__.py
   - tests/conftest.py
   - tests/test_integration_loads.py
+  - custom_components/*/*/__init__.py
+  - tests/**/__init__.py
+  - tests/**/test_integration_loads.py
 
 integration_domain:
   type: str
