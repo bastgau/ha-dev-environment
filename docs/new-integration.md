@@ -63,6 +63,7 @@ Also generated, once (`_skip_if_exists` in `copier.yml`: a repository that alrea
 
 - `README.md`: the badges (maintainer, Python, Home Assistant, release, HACS and hassfest validation), installation through HACS or by hand with the "Add Repository" and "Add Integration" buttons, a configuration placeholder, development, license. The "Add Integration" button only works once the integration has a config flow.
 - `hacs.json` (`name`, `render_readme`).
+- With a `client_package`: the client package `custom_components/<domain>/<client_package>/__init__.py` and, in the folder of `client_tests_path`, `__init__.py` and `test_integration_loads.py`, a first test that imports the client without starting Home Assistant. Without it, `scripts/test client` finds no test and fails.
 - The integration skeleton `custom_components/<domain>/`: `__init__.py` (a docstring and `DOMAIN`) and `manifest.json` (`domain`, `name`, `codeowners`, `documentation`, `issue_tracker`, `version`, and placeholders to adjust: `config_flow` false, `integration_type` `service`, `iot_class` `cloud_polling`).
 
 ## 3. Adjust the generated integration
