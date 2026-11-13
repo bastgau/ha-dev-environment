@@ -23,6 +23,7 @@ Copier asks for the project variables (see `copier.yml`) and records the answers
 | `author_name`, `author_email`                                        | Author and maintainer in `pyproject.toml`; `author_name` is also the copyright holder of `LICENSE`. Default to Jane Doe, `jane.doe@example.com`     |
 | `copyright_year`                                                     | First year of the `LICENSE` notice (MIT): the year the repository was created. Defaults to the current year                                         |
 | `coverage_fail_under`                                                | Minimum coverage, in percent, `scripts/test` and CI require of each test scope. Defaults to 95                                                      |
+| `ha_minimum_version`                                                 | Minimum Home Assistant version supported (the `homeassistant` key of `hacs.json`), shown as a warning in the bug report. Defaults to 2026.10.0      |
 
 `.devcontainer/.common-env` is generated from these and is the single place scripts and workflows read them from.
 

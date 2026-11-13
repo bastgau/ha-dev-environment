@@ -109,12 +109,17 @@ grep -qx 'COVERAGE_FAIL_UNDER=95' "$dest/.devcontainer/.common-env" || fail ".co
 # shellcheck disable=SC2016
 grep -q -- '--cov-fail-under="$COVERAGE_FAIL_UNDER"' "$dest/scripts/test" || fail "scripts/test ignores COVERAGE_FAIL_UNDER"
 mkdir -p "$work/bad-floor"
+mkdir -p "$work/bad-ha"
+! copier copy --quiet --trust --defaults --vcs-ref=HEAD -d integration_domain=demo -d integration_name=Demo \
+  -d description="Demo integration" -d ha_minimum_version=latest "$root" "$work/bad-ha" > /dev/null 2>&1 \
+  || fail "copier accepts a Home Assistant version that is not YYYY.M.P"
 ! copier copy --quiet --trust --defaults --vcs-ref=HEAD -d integration_domain=demo -d integration_name=Demo \
   -d description="Demo integration" -d coverage_fail_under=150 "$root" "$work/bad-floor" > /dev/null 2>&1 \
   || fail "copier accepts a coverage floor above 100"
 for template in config.yml feature_request.yml bug_report.yml; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
+grep -q 'requires Home Assistant 2026.10.0 or later' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not warn about the minimum Home Assistant version"
 grep -qx '      label: Demo version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not name the integration"
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"

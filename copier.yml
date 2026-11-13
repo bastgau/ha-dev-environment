@@ -67,6 +67,15 @@ client_tests_path:
   default: "tests/{{ integration_domain }}/{{ client_package }}"
   when: "{{ client_package != '' }}"
 
+ha_minimum_version:
+  type: str
+  help: Minimum Home Assistant version the integration supports (the homeassistant key of hacs.json), shown as a warning in the bug report
+  default: "2026.10.0"
+  validator: >-
+    {% if not (ha_minimum_version | regex_search('^[0-9]{4}\\.[0-9]+\\.[0-9]+$')) %}
+    Use a Home Assistant version such as 2026.10.0
+    {% endif %}
+
 python_version:
   type: str
   help: Python version of the runtime (devcontainer, CI)

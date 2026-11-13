@@ -3,6 +3,9 @@ name: 🐞 Bug report
 description: Report an issue
 labels: ["issue:bug", "issue:triage"]
 body:
+  - type: markdown
+    attributes:
+      value: "**Warning:** {{ integration_name }} requires Home Assistant {{ ha_minimum_version }} or later. Reports from older versions cannot be handled."
 {%- if extra.get('bug_report_top') %}
 {{ extra.bug_report_top | to_nice_yaml(indent=2, sort_keys=False) | indent(2, true) | trim('\n') }}
 {%- endif %}
