@@ -162,7 +162,8 @@ for template in (root / "ISSUE_TEMPLATE").glob("*.yml"):
 PY
 # The issue extras and the seeded tests belong to the repository once created: a
 # new render keeps them, and the bug report picks the extras up.
-cat > "$dest/.issue-extra.yml" <<'EXTRA'
+mkdir -p "$dest/.github"
+cat > "$dest/.github/.issue-extra.yml" <<'EXTRA'
 bug_report_versions:
   - type: input
     attributes:
@@ -181,8 +182,8 @@ for seeded in README.md hacs.json custom_components/demo/__init__.py custom_comp
 done
 copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
   -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" "$root" "$dest"
-grep -qx 'bug_report_versions:' "$dest/.issue-extra.yml" || fail "a new render overwrote .issue-extra.yml"
-grep -qx '      label: Device firmware version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml ignores .issue-extra.yml"
+grep -qx 'bug_report_versions:' "$dest/.github/.issue-extra.yml" || fail "a new render overwrote .github/.issue-extra.yml"
+grep -qx '      label: Device firmware version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml ignores .github/.issue-extra.yml"
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   grep -qx "\"\"\"Local $seeded.\"\"\"" "$dest/tests/$seeded" || fail "a new render overwrote tests/$seeded"
 done

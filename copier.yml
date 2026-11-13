@@ -5,9 +5,9 @@
 _min_copier_version: "9.0.0"
 _subdirectory: template
 _templates_suffix: .jinja
-# Read from the repository itself: what it adds to the issue forms (see .issue-extra.yml).
+# Read from the repository itself: what it adds to the issue forms (see .github/.issue-extra.yml).
 _external_data:
-  issue_extra: .issue-extra.yml
+  issue_extra: .github/.issue-extra.yml
 # Seeded once, never overwritten: generated per repository (HA version dependent), or
 # owned by the repository once created (project-specific fields of the bug report,
 # the tests some repositories vendor from Home Assistant core, a first test to start from,
@@ -19,7 +19,7 @@ _skip_if_exists:
   - custom_components/*/manifest.json
   - .devcontainer/.env
   - .devcontainer/requirements-default-config.txt
-  - .issue-extra.yml
+  - .github/.issue-extra.yml
   - tests/__init__.py
   - tests/conftest.py
   - tests/test_integration_loads.py
