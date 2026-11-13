@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Installs python3 with the system package manager, unless it is already there.
+# Supports apt (Debian, Ubuntu), dnf (Fedora, RHEL), pacman (Arch), apk (Alpine)
+# and Homebrew (macOS, Linux). Safe to re-run.
+# Usage: scripts/install-python
+
+set -euo pipefail
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+echo "== python3"
+if command -v python3 > /dev/null 2>&1; then
+  echo "already installed: $(python3 --version)"
+  exit 0
+fi
+
+# Root runs the package manager directly, anyone else goes through sudo.
+sudo_cmd=()
+if [ "$(id -u)" -ne 0 ]; then
+  command -v sudo > /dev/null 2>&1 || fail "not root and sudo is not installed"
+  sudo_cmd=(sudo)
+fi
+
+if command -v apt-get > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" apt-get update
+  "${sudo_cmd[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-venv python3-pip
+elif command -v dnf > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" dnf install -y python3 python3-pip
+elif command -v pacman > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" pacman -S --needed --noconfirm python python-pip
+elif command -v apk > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" apk add --no-cache python3 py3-pip
+elif command -v brew > /dev/null 2>&1; then
+  # Homebrew refuses to run as root and does not use sudo.
+  brew install python
+else
+  fail "no supported package manager (apt-get, dnf, pacman, apk or brew) found"
+fi
+
+command -v python3 > /dev/null 2>&1 || fail "python3 is still not on PATH after the installation"
+echo "installed: $(python3 --version)"

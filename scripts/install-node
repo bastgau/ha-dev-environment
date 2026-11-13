@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Installs Node.js, which provides npx, with the system package manager, unless
+# npx is already there. npx runs the Prettier check of scripts/check-template.
+# Supports apt (Debian, Ubuntu), dnf (Fedora, RHEL), pacman (Arch), apk (Alpine)
+# and Homebrew (macOS, Linux). Safe to re-run.
+# Usage: scripts/install-node
+
+set -euo pipefail
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+echo "== node (npx)"
+if command -v npx > /dev/null 2>&1; then
+  echo "already installed: npx $(npx --version)"
+  exit 0
+fi
+
+# Root runs the package manager directly, anyone else goes through sudo.
+sudo_cmd=()
+if [ "$(id -u)" -ne 0 ]; then
+  command -v sudo > /dev/null 2>&1 || fail "not root and sudo is not installed"
+  sudo_cmd=(sudo)
+fi
+
+if command -v apt-get > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" apt-get update
+  "${sudo_cmd[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs npm
+elif command -v dnf > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" dnf install -y nodejs npm
+elif command -v pacman > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" pacman -S --needed --noconfirm nodejs npm
+elif command -v apk > /dev/null 2>&1; then
+  "${sudo_cmd[@]}" apk add --no-cache nodejs npm
+elif command -v brew > /dev/null 2>&1; then
+  # Homebrew refuses to run as root and does not use sudo.
+  brew install node
+else
+  fail "no supported package manager (apt-get, dnf, pacman, apk or brew) found"
+fi
+
+command -v npx > /dev/null 2>&1 || fail "npx is still not on PATH after the installation"
+echo "installed: npx $(npx --version)"
