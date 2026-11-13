@@ -112,10 +112,10 @@ mkdir -p "$work/bad-floor"
 ! copier copy --quiet --trust --defaults --vcs-ref=HEAD -d integration_domain=demo -d integration_name=Demo \
   -d description="Demo integration" -d coverage_fail_under=150 "$root" "$work/bad-floor" > /dev/null 2>&1 \
   || fail "copier accepts a coverage floor above 100"
-for template in config.yml feature_request.md bug_report.md; do
+for template in config.yml feature_request.yml bug_report.yml; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
-grep -qx '\*\*Demo version:\*\*' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "bug_report.md does not name the integration"
+grep -qx '      label: Demo version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not name the integration"
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"
 grep -qx 'DOMAIN = "demo"' "$dest/tests/test_integration_loads.py" || fail "the first test does not name the domain"
@@ -147,15 +147,22 @@ python3 - "$dest/.github" <<'PY' || fail "an issue template uses a label missing
 import json, pathlib, re, sys
 root = pathlib.Path(sys.argv[1])
 known = {label["name"] for label in json.load(open(root / "labels.json"))}
-for template in (root / "ISSUE_TEMPLATE").glob("*.md"):
+for template in (root / "ISSUE_TEMPLATE").glob("*.yml"):
+    if template.name == "config.yml":
+        continue
     used = re.search(r"^labels: \[(.*)\]$", template.read_text(), re.MULTILINE)
     assert used, template.name
     for name in re.findall(r'"([^"]+)"', used.group(1)):
         assert name in known, (template.name, name)
 PY
-# The bug report and the seeded tests belong to the repository once created: a
-# new render keeps them.
-printf 'local bug report\n' > "$dest/.github/ISSUE_TEMPLATE/bug_report.md"
+# The issue extras and the seeded tests belong to the repository once created: a
+# new render keeps them, and the bug report picks the extras up.
+cat > "$dest/.issue-extra.yml" <<'EXTRA'
+bug_report_versions:
+  - type: input
+    attributes:
+      label: Device firmware version
+EXTRA
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   printf '"""Local %s."""\n' "$seeded" > "$dest/tests/$seeded"
 done
@@ -169,7 +176,8 @@ for seeded in README.md hacs.json custom_components/demo/__init__.py custom_comp
 done
 copier copy --quiet --trust --defaults --overwrite --vcs-ref=HEAD \
   -d integration_domain=demo -d integration_name=Demo -d description="Demo integration" "$root" "$dest"
-grep -qx 'local bug report' "$dest/.github/ISSUE_TEMPLATE/bug_report.md" || fail "a new render overwrote bug_report.md"
+grep -qx 'bug_report_versions:' "$dest/.issue-extra.yml" || fail "a new render overwrote .issue-extra.yml"
+grep -qx '      label: Device firmware version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml ignores .issue-extra.yml"
 for seeded in __init__.py conftest.py test_integration_loads.py; do
   grep -qx "\"\"\"Local $seeded.\"\"\"" "$dest/tests/$seeded" || fail "a new render overwrote tests/$seeded"
 done
