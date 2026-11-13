@@ -1,19 +1,28 @@
 # Copier template for bastgau's Home Assistant custom integrations.
 #
-#   copier copy gh:bastgau/ha-dev-environment <target>     # first time
-#   copier update                                           # later, from the target
+#   uvx --from copier copier copy gh:bastgau/ha-dev-environment <target>   # first time
+#   uvx --from copier copier update                                         # later, from the target
 _min_copier_version: "9.0.0"
 _subdirectory: template
 _templates_suffix: .jinja
 # Seeded once, never overwritten: generated per repository (HA version dependent), or
 # owned by the repository once created (project-specific fields of the bug report,
-# the tests some repositories vendor from Home Assistant core, a first test to start from).
+# the tests some repositories vendor from Home Assistant core, a first test to start from,
+# the README, the HACS file, the integration skeleton and the local .env holding your token).
 _skip_if_exists:
+  - README.md
+  - hacs.json
+  - custom_components/*/__init__.py
+  - custom_components/*/manifest.json
+  - .devcontainer/.env
   - .devcontainer/requirements-default-config.txt
   - .github/ISSUE_TEMPLATE/bug_report.md
   - tests/__init__.py
   - tests/conftest.py
   - tests/test_integration_loads.py
+  - custom_components/*/*/__init__.py
+  - tests/**/__init__.py
+  - tests/**/test_integration_loads.py
 
 integration_domain:
   type: str
@@ -79,7 +88,7 @@ copyright_year:
   help: >-
     Year the repository was created, the first year of the LICENSE copyright notice.
     Recorded once: on an existing repository, give it on the first update that asks
-    (copier update -d copyright_year=<year>), or the current year is taken.
+    (uvx --from copier copier update -d copyright_year=<year>), or the current year is taken.
   default: "{{ '%Y' | strftime }}"
 
 coverage_fail_under:

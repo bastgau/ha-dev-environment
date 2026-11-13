@@ -1,0 +1,53 @@
+# {{ integration_name }}
+
+[![Maintainer: {{ github_owner }}](https://img.shields.io/badge/maintainer-{{ github_owner }}-orange?logo=github&logoColor=%23959da5&labelColor=%232d333a)](https://github.com/{{ github_owner }})
+[![Made with Python](https://img.shields.io/badge/Made_with-Python-blue?style=flat&logo=python&logoColor=%23959da5&labelColor=%232d333a)](https://www.python.org/)
+[![Made for Home Assistant](https://img.shields.io/badge/Made_for-Homeassistant-blue?style=flat&logo=homeassistant&logoColor=%23959da5&labelColor=%232d333a)](https://www.home-assistant.io/)
+[![GitHub Release](https://img.shields.io/github/v/release/{{ github_owner }}/{{ repo_name }}?logo=github&logoColor=%23959da5&labelColor=%232d333a&color=%230e80c0)](https://github.com/{{ github_owner }}/{{ repo_name }}/releases)
+[![HACS validation](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-for-hacs.yml/badge.svg)](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-for-hacs.yml)
+[![HASSFEST validation](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-with-hassfest.yml/badge.svg)](https://github.com/{{ github_owner }}/{{ repo_name }}/actions/workflows/validate-with-hassfest.yml)
+
+{{ description }}
+
+## Installation
+
+### Installation via HACS
+
+1. Add this repository as a custom repository to HACS:
+
+[![Add Repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner={{ github_owner }}&repository={{ repo_name }}&category=Integration)
+
+2. Use HACS to install the integration.
+3. Restart Home Assistant.
+4. Set up the integration using the UI (once it has a config flow):
+
+[![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain={{ integration_domain }})
+
+### Manual Installation
+
+1. Download the integration files from the GitHub repository.
+2. Place the `{{ integration_domain }}` folder in the `custom_components` directory of Home Assistant.
+3. Restart Home Assistant.
+4. Set up the integration using the UI (once it has a config flow):
+
+[![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain={{ integration_domain }})
+
+## Configuration
+
+Describe here how to set up the integration.
+
+## Development
+
+The repository comes with a devcontainer: open it in VS Code and choose "Reopen in Container". Then:
+
+```bash
+scripts/lint     # ruff, pylint, pyright, docstring-linter, Prettier
+scripts/test     # pytest with the coverage gate
+scripts/develop  # Home Assistant on http://localhost:8123, configuration in ./config
+```
+
+The scripts are described in [scripts/README.md](scripts/README.md). The development environment is managed by [ha-dev-environment](https://github.com/bastgau/ha-dev-environment): `uvx --from copier copier update` brings in its changes.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

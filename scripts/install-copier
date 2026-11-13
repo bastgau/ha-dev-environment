@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Installs Copier as a uv tool: `copier` goes in ~/.local/bin, outside any project
+# environment. uv does nothing when the installed version already satisfies the spec.
+# Needs uv (scripts/install-uv). Safe to re-run.
+# Usage: scripts/install-copier
+
+set -euo pipefail
+
+# Same floor as `_min_copier_version` in copier.yml.
+copier_spec="copier>=9.0.0"
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+echo "== copier"
+export PATH="$HOME/.local/bin:$PATH"
+command -v uv > /dev/null 2>&1 || fail "uv is not installed (run scripts/install-uv first)"
+# The system interpreter (installed by scripts/install-python) is used, not a CPython
+# that uv would download (the newest one, ~30 MB, fetched again when the container
+# is recreated). --python-preference system is needed: uv prefers its own
+# interpreters otherwise.
+uv tool install --quiet --python-preference system --python python3 "$copier_spec" \
+  || fail "uv tool install cannot install Copier"
+copier --version || fail "copier is not on PATH (is ~/.local/bin in PATH?)"

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Installs uv (and uvx) with the official installer, into ~/.local/bin, unless
+# uv is already there. Safe to re-run.
+# Usage: scripts/install-uv   (needs curl)
+
+set -euo pipefail
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+echo "== uv"
+# The official installer puts uv and uvx in ~/.local/bin, which may not be on PATH yet.
+export PATH="$HOME/.local/bin:$PATH"
+if command -v uv > /dev/null 2>&1; then
+  echo "already installed: $(uv --version)"
+  exit 0
+fi
+
+command -v curl > /dev/null 2>&1 || fail "curl is not installed (needed to download uv)"
+curl -LsSf https://astral.sh/uv/install.sh | sh
+command -v uv > /dev/null 2>&1 || fail "uv is still not on PATH after the installation"
+echo "installed: $(uv --version)"
