@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Installs what working on this template needs: uv, through which Copier runs
+# with `uvx copier ...` without being installed anywhere. Safe to re-run.
+# Usage: scripts/setup   (Linux, macOS, WSL; needs curl and git)
+
+set -euo pipefail
+
+# Same floor as `_min_copier_version` in copier.yml.
+copier_spec="copier>=9.0.0"
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+command -v git > /dev/null 2>&1 || fail "git is not installed (Copier needs it)"
+
+echo "== uv"
+# The official installer puts uv and uvx in ~/.local/bin.
+export PATH="$HOME/.local/bin:$PATH"
+if command -v uv > /dev/null 2>&1; then
+  echo "already installed: $(uv --version)"
+else
+  command -v curl > /dev/null 2>&1 || fail "curl is not installed (needed to download uv)"
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  command -v uv > /dev/null 2>&1 || fail "uv is still not on PATH after the installation"
+  echo "installed: $(uv --version)"
+fi
+
+echo "== copier"
+# Downloads Copier into uv's cache, so that the first real `uvx copier` is instant.
+uvx --quiet --from "$copier_spec" copier --version || fail "uvx cannot run Copier"
+
+echo
+echo "Done. Open a new shell (or run: export PATH=\"\$HOME/.local/bin:\$PATH\") then:"
+echo "  uvx copier copy gh:bastgau/ha-dev-environment <target>"
+echo "  uvx copier update"

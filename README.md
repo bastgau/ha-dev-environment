@@ -6,6 +6,8 @@ Shared development environment for bastgau's Home Assistant custom integrations 
 
 Copier is a Python command line tool (this template needs Copier 9.0.0 or newer, see `_min_copier_version` in `copier.yml`) and needs `git`. The steps are the same on Linux, macOS and Windows with WSL.
 
+From a clone of this repository, `scripts/setup` does it all: it installs uv if it is missing (in `~/.local/bin`) and checks that `uvx copier --version` runs. The devcontainer runs it on creation. Then use `uvx copier copy …` and `uvx copier update` wherever the commands below say `copier`. The manual steps:
+
 1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), which the generated repositories use as well:
 
    ```bash
