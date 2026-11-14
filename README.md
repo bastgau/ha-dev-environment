@@ -61,6 +61,18 @@ Every repository gets the list as `.github/labels.json` and a `sync-labels.yml` 
 
 To add or change a label: edit `template/.github/labels.json`, merge, release, then `copier update` in each repository.
 
+## Repository settings
+
+`.github/repo-settings.json` is the reference for the GitHub settings of every repository (default branch, wiki, merge options, what Actions may do, security features). It is a snapshot of `ha-pi-hole-v6`. `scripts/sync-repo-settings` compares a repository with it and aligns it on demand. It needs `gh` (`repo` scope) and `jq`.
+
+```bash
+scripts/sync-repo-settings diff  --from .github/repo-settings.json bastgau/ha-clouding bastgau/ha-globe-radio
+scripts/sync-repo-settings apply --from .github/repo-settings.json bastgau/ha-clouding           # dry-run
+scripts/sync-repo-settings apply --from .github/repo-settings.json bastgau/ha-clouding --yes     # writes
+```
+
+`apply` only changes the settings that differ, and does nothing without `--yes`. The default branch is reported but never renamed. Settings GitHub does not expose for a repository (branch protection and rulesets on a private repository of a free plan) are out of scope. List keys to skip, one per line, in `.github/repo-settings.ignore`. To change the reference, edit the JSON, or regenerate it from another repository with `scripts/sync-repo-settings snapshot <owner>/<repo> > .github/repo-settings.json`.
+
 ## MCP servers
 
 `template/.mcp.json` declares the GitHub MCP server shared by every repository; the token is read from the `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable, which the devcontainer takes from `.devcontainer/.env`. That file is seeded once with the placeholder `xxxxx` (replace it with your token) and is gitignored, so nothing secret is committed.
