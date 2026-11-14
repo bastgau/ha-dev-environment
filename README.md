@@ -45,6 +45,7 @@ Copier decides what is "newer" from **version tags** (`v0.1.0`, `v0.2.0`…) on 
 ## Keeping the repositories in step
 
 - Each target repository gets `.github/workflows/template-drift.yml`: every Monday it runs `copier check-update` and turns red when a newer template tag exists. This repository is public, so the workflow needs no token.
+- Each target repository also gets `.github/workflows/template-update.yml`: when a newer template tag exists, it opens a pull request `template-update/<tag>` against `develop` with `copier update` applied, and closes the previous one. Its token is `GITHUB_TOKEN`, so the repository must allow Actions to create pull requests.
 
 Fixed choices shared by every repository: Prettier skips `card/` and every `bruno/` folder and leaves `.copier-answers.yml` alone; `tests/testing_config` and `tests/typing.py` are excluded from the linters when they exist; a `stale.yml` workflow closes inactive issues; `.github/ISSUE_TEMPLATE` holds the issue templates (bug report and feature proposal as issue forms, blank issues disabled), whose labels all come from the labels list below.
 
