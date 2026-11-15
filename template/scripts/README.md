@@ -62,4 +62,4 @@ scripts/sync-repo-settings diff  --from .github/repo-settings.json <owner>/<repo
 scripts/sync-repo-settings apply --from .github/repo-settings.json <owner>/<repo> [--yes]
 ```
 
-Reads the GitHub settings of a repository (default branch, wiki, merge options, Actions permissions, security features) and compares them with `.github/repo-settings.json`. `apply` is a dry-run unless `--yes` is given, and only touches what differs. The default branch is reported, never renamed. Needs `gh` and `jq`; it does not use `.devcontainer/.common-env`. Keys listed in `.github/repo-settings.ignore` (one per line) are skipped. Exit status 1 when a repository differs.
+Reads the GitHub settings of a repository (default branch, wiki, merge options, Actions permissions, security features) and compares them with `.github/repo-settings.json`. `apply` is a dry-run unless `--yes` is given, and only touches what differs. The default branch is reported, never renamed. Needs `gh` and `jq` (both installed by the devcontainer image); it does not use `.devcontainer/.common-env`. Keys listed in `.github/repo-settings.ignore` (one per line) are skipped. Exit status 1 when a repository differs.
