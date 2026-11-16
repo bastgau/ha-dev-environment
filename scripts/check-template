@@ -35,6 +35,20 @@ render() {
 
 check_common() {
   local dest="$1"
+  # The eight generic agents and the brand tooling of the web designer, in every project.
+  for agent in ha-architect ha-ci-quality-guardian ha-developer ha-lookup ha-release-manager ha-reviewer ha-test-writer ha-webdesigner; do
+    [ -f "$dest/.claude/agents/$agent.md" ] || fail "agent $agent is missing"
+    grep -q "^name: $agent$" "$dest/.claude/agents/$agent.md" || fail "agent $agent does not carry its name"
+  done
+  ! grep -rqiE 'movie_showtimes|allocine|cinema' "$dest/.claude" || fail "a project-specific word is left in .claude"
+  for brand in render.cjs preview.py README.md; do
+    [ -f "$dest/docs/brand/$brand" ] || fail "docs/brand/$brand is missing"
+  done
+  grep -q 'custom_components/demo/brand' "$dest/docs/brand/README.md" || fail "docs/brand/README.md does not name the brand folder"
+  ! grep -rq '{{\|{%' "$dest/.claude/agents" "$dest/docs/brand" || fail "a Jinja sequence is left in the agents or the brand tooling"
+  if command -v node > /dev/null 2>&1; then
+    node --check "$dest/docs/brand/render.cjs" || fail "docs/brand/render.cjs does not parse"
+  fi
   for script in "$dest"/scripts/_common "$dest"/scripts/lint "$dest"/scripts/test "$dest"/scripts/setup "$dest"/scripts/develop; do
     bash -n "$script" || fail "$script does not parse"
   done
