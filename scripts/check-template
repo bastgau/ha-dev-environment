@@ -83,6 +83,12 @@ check_common "$dest"
 [ "$("$dest/scripts/test" --list-scopes)" = '["integration"]' ] || fail "unexpected test scopes (plain)"
 [ ! -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration generated without a client"
 [ -z "$(find "$dest/custom_components" "$dest/tests" -mindepth 2 -type d ! -name __pycache__)" ] || fail "client folders generated without a client"
+# Without has_card nothing of the card is generated, and the JavaScript lint is there but has nothing to check.
+[ ! -e "$dest/custom_components/demo/card.py" ] && [ ! -e "$dest/custom_components/demo/frontend" ] && [ ! -e "$dest/tests/test_card.py" ] \
+  || fail "card files generated without has_card"
+! grep -q after_dependencies "$dest/custom_components/demo/manifest.json" || fail "manifest.json has after_dependencies without a card"
+[ -f "$dest/eslint.config.mjs" ] || fail "eslint.config.mjs missing"
+grep -q 'nothing to check' <("$dest/scripts/lint" js) || fail "scripts/lint js does not report that there is no JavaScript"
 
 # Fixed choices of the template, checked on the rendered project.
 for workflow in lint test; do
@@ -245,5 +251,25 @@ for command in create-develop-pull-request create-main-pull-request; do
   grep -q 'assigned to `bastgau`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
   ! grep -q janedoe "$dest/.claude/commands/$command.md" || fail "$command.md still names the default owner"
 done
+
+echo "== with a Lovelace card"
+dest="$(render card -d has_card=true)"
+check_common "$dest"
+for card_file in custom_components/demo/card.py custom_components/demo/frontend/demo-card.js tests/test_card.py eslint.config.mjs; do
+  [ -f "$dest/$card_file" ] || fail "$card_file missing with has_card"
+done
+python3 - "$dest" <<'PY' || fail "the card manifest or skeleton is not what hassfest expects"
+import json, pathlib, sys
+dest = pathlib.Path(sys.argv[1]) / "custom_components/demo"
+assert json.load(open(dest / "manifest.json"))["after_dependencies"] == ["frontend", "http"]
+init = (dest / "__init__.py").read_text()
+assert "CONFIG_SCHEMA" in init and "async_register_card" in init, init
+card = (dest / "card.py").read_text()
+assert 'CARD_FILENAME: Final = "demo-card.js"' in card and 'f"/demo/{CARD_FILENAME}"' in card, card
+PY
+python3 -m compileall -q "$dest/custom_components" "$dest/tests" || fail "the generated card code does not compile"
+if command -v node > /dev/null 2>&1 && command -v npx > /dev/null 2>&1; then
+  (cd "$dest" && scripts/lint js > /dev/null) || fail "scripts/lint js fails on the placeholder card"
+fi
 
 echo "OK"

@@ -27,12 +27,13 @@ Then `uv sync` (the groups declared in `pyproject.toml`), then the `default_conf
 scripts/lint [scope ...]     # default: all
 ```
 
-| Scope         | Paths                                                   | Checks                                                     |
-| ------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
-| `client`      | `custom_components/<domain>/<client>` (if there is one) | ruff check, ruff format, pylint, pyright, docstring-linter |
-| `integration` | `custom_components/<domain>/*.py`                       | same five                                                  |
-| `tests`       | `tests/`                                                | same five                                                  |
-| `repo`        | `**/*.{json,yaml,yml,md}` minus the excluded folders    | Prettier (**writes**)                                      |
+| Scope         | Paths                                                       | Checks                                                                                                                                                                                     |
+| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `client`      | `custom_components/<domain>/<client>` (if there is one)     | ruff check, ruff format, pylint, pyright, docstring-linter                                                                                                                                 |
+| `integration` | `custom_components/<domain>/*.py`                           | same five                                                                                                                                                                                  |
+| `tests`       | `tests/`                                                    | same five                                                                                                                                                                                  |
+| `js`          | the `.js` / `.mjs` files                                    | `prettier --check` (no write), then `node --check` and ESLint (what CI runs)                                                                                                               |
+| `repo`        | `**/*.{json,yaml,yml,md,js,mjs}` minus the excluded folders | Prettier (**writes**), then `node --check` and ESLint on the `.js` / `.mjs` files under `custom_components/` and `tests/` (pinned `npx eslint`, `eslint.config.mjs`, skipped without node) |
 
 `.github/workflows/lint.yml` asks `scripts/lint --list-scopes` which scopes exist, so **a green run here predicts a green CI run** by construction. Every check runs even after one fails.
 
