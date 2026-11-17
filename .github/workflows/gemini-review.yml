@@ -1,0 +1,167 @@
+name: "Gemini review"
+
+# Reviews a pull request with Gemini, through google-github-actions/run-gemini-cli.
+# Reserved to the members of the project (owner, member, collaborator), so that the Gemini quota
+# is not spent on anyone else: it runs by itself when a member opens a pull request from this
+# repository, and on demand when a member comments "@gemini-cli /review" on a pull request,
+# optionally followed by what to focus on. It can also be started by hand from the Actions tab,
+# where the model is picked from a list. Without a choice, the GEMINI_MODEL variable is used, then
+# gemini-3.5-flash-lite. Requires the GEMINI_API_KEY secret.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: "Number of the pull request to review"
+        type: "string"
+        required: true
+      model:
+        description: "Gemini model"
+        type: "choice"
+        default: "gemini-3.5-flash-lite"
+        options:
+          - "gemini-4-hydrogen"
+          - "gemini-3.5-flash-lite"
+          - "gemini-3.1-flash-lite"
+          - "gemini-3.8-flash"
+      additional_context:
+        description: "What the review should focus on"
+        type: "string"
+        required: false
+  pull_request:
+    types:
+      - "opened"
+  pull_request_review_comment:
+    types:
+      - "created"
+  pull_request_review:
+    types:
+      - "submitted"
+  issue_comment:
+    types:
+      - "created"
+
+permissions: {}
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || inputs.pull_request_number }}"
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: "review"
+    # Only a member of the project can get a review. A pull request from a fork is skipped because
+    # it must not reach the secrets. A comment must be on a pull request (not an issue). A manual
+    # run is already limited by GitHub to the people with write access.
+    if: |-
+      github.event_name == 'workflow_dispatch' || (
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.fork == false &&
+        github.event.pull_request.user.type == 'User' &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association)
+      ) || (
+        github.event_name != 'pull_request' &&
+        github.event.sender.type == 'User' &&
+        (github.event_name != 'issue_comment' || github.event.issue.pull_request) &&
+        startsWith(github.event.comment.body || github.event.review.body, '@gemini-cli /review') &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association)
+      )
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: "actions/checkout@v7"
+        with:
+          persist-credentials: false
+
+      - name: "Prepare the prompt context"
+        env:
+          REPOSITORY: "${{ github.repository }}"
+          PULL_REQUEST_NUMBER: "${{ github.event.pull_request.number || github.event.issue.number || inputs.pull_request_number }}"
+          REQUEST: "${{ github.event.comment.body || github.event.review.body }}"
+          MANUAL_CONTEXT: "${{ inputs.additional_context }}"
+        run: |
+          mkdir -p .gemini
+          additional_context="${REQUEST#@gemini-cli /review}${MANUAL_CONTEXT}"
+          # Handed to the review prompt, which the extension leaves as the literal text $ADDITIONAL_CONTEXT.
+          delimiter="EOF_$(openssl rand -hex 16)"
+          {
+            echo "ADDITIONAL_CONTEXT<<${delimiter}"
+            echo "${additional_context}"
+            echo "${delimiter}"
+          } >> "${GITHUB_ENV}"
+          jq -n \
+            --arg repo "${REPOSITORY}" \
+            --arg pr "${PULL_REQUEST_NUMBER}" \
+            --arg context "${additional_context}" \
+            '{repository: $repo, pull_request_number: $pr, additional_context: $context}' > .gemini/context.json
+
+      - name: "Run the Gemini pull request review"
+        uses: "google-github-actions/run-gemini-cli@v0"
+        env:
+          GEMINI_CLI_TRUST_WORKSPACE: "true"
+          GITHUB_TOKEN: "${{ github.token }}"
+        with:
+          gemini_api_key: "${{ secrets.GEMINI_API_KEY }}"
+          gemini_model: "${{ inputs.model || vars.GEMINI_MODEL || 'gemini-3.5-flash-lite' }}"
+          # Both follow the GEMINI_DEBUG repository variable, to see what the CLI answered when no review is posted.
+          gemini_debug: "${{ fromJSON(vars.GEMINI_DEBUG || false) }}"
+          upload_artifacts: "${{ vars.GEMINI_DEBUG || false }}"
+          workflow_name: "gemini-review"
+          # Set explicitly because an issue_comment event is an issue for GitHub, not a pull request.
+          github_pr_number: "${{ github.event.pull_request.number || github.event.issue.number || inputs.pull_request_number }}"
+          # Once tools.core is set, the CLI denies every tool that is not listed in it, the MCP ones included,
+          # under their mcp_<server>_<tool> name. So only the skill loader and the three GitHub tools needed
+          # to read the pull request and post the review are allowed: no shell, no file access.
+          settings: |-
+            {
+              "model": {
+                "maxSessionTurns": 25
+              },
+              "mcpServers": {
+                "github": {
+                  "command": "docker",
+                  "args": [
+                    "run",
+                    "-i",
+                    "--rm",
+                    "-e",
+                    "GITHUB_PERSONAL_ACCESS_TOKEN",
+                    "ghcr.io/github/github-mcp-server:v0.27.0"
+                  ],
+                  "includeTools": [
+                    "add_comment_to_pending_review",
+                    "pull_request_read",
+                    "pull_request_review_write"
+                  ],
+                  "env": {
+                    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+                  }
+                }
+              },
+              "tools": {
+                "core": [
+                  "activate_skill",
+                  "mcp_github_pull_request_read",
+                  "mcp_github_pull_request_review_write",
+                  "mcp_github_add_comment_to_pending_review"
+                ]
+              }
+            }
+          extensions: |
+            [
+              "https://github.com/gemini-cli-extensions/code-review"
+            ]
+          # The extension prompt only holds the placeholders $REPOSITORY, $PULL_REQUEST_NUMBER and
+          # $ADDITIONAL_CONTEXT, which the CLI does not fill in: the values are given as arguments.
+          prompt: |-
+            /pr-code-review
+            GitHub Repository: ${{ github.repository }}
+            Pull Request Number: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pull_request_number }}
+            Additional User Instructions: ${{ env.ADDITIONAL_CONTEXT }}
+            The GitHub tools are named mcp_github_pull_request_read (methods get, get_diff, get_files),
+            mcp_github_pull_request_review_write (methods create, submit_pending) and
+            mcp_github_add_comment_to_pending_review. No other tool is available.
