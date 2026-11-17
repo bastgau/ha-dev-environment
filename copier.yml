@@ -31,6 +31,14 @@ _skip_if_exists:
   - custom_components/*/frontend/*-card.js
   - tests/test_card.py
 
+# Dry-run check of the repository settings against .github/repo-settings.json: it lists the
+# differences and never writes to GitHub (no --yes). Skipped while there is no GitHub remote.
+_tasks:
+  - command: |
+      repo=$(git remote get-url origin 2>/dev/null | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##') \
+        && [ -n "$repo" ] || { echo "no GitHub remote yet, skipping the settings check"; exit 0; }
+      scripts/sync-repo-settings apply --from .github/repo-settings.json "$repo" || true
+
 # The issue templates became issue forms (.yml): drop the Markdown ones a repository
 # generated before. Runs only on `copier update` from a release older than this version.
 _migrations:

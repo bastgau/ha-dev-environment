@@ -61,6 +61,22 @@ Every repository gets the list as `.github/labels.json` and a `sync-labels.yml` 
 
 To add or change a label: edit `template/.github/labels.json`, merge, release, then `copier update` in each repository.
 
+## Repository settings
+
+`template/.github/repo-settings.json` is the reference for the GitHub settings of every repository (default branch, wiki, merge options, what Actions may do, security features): a snapshot of `ha-pi-hole-v6`. Every repository gets it as `.github/repo-settings.json`, with `scripts/sync-repo-settings`, which compares a repository with it and aligns it on demand. It needs `gh` (`repo` scope) and `jq`.
+
+```bash
+scripts/sync-repo-settings diff  --from .github/repo-settings.json bastgau/ha-clouding bastgau/ha-globe-radio
+scripts/sync-repo-settings apply --from .github/repo-settings.json bastgau/ha-clouding           # dry-run
+scripts/sync-repo-settings apply --from .github/repo-settings.json bastgau/ha-clouding --yes     # writes
+```
+
+`apply` only changes the settings that differ, and does nothing without `--yes`. The default branch is reported but never renamed. Settings GitHub does not expose for a repository (branch protection and rulesets on a private repository of a free plan) are out of scope. List keys to skip, one per line, in `.github/repo-settings.ignore`.
+
+`copier copy` and `copier update` run `apply` as a dry-run on the repository named by the `origin` remote, so the differences are listed and nothing is written. The task is skipped when there is no GitHub remote yet.
+
+To change the reference: edit `template/.github/repo-settings.json`, or regenerate it from another repository with `scripts/sync-repo-settings snapshot <owner>/<repo> > template/.github/repo-settings.json`. Merge, release, then `copier update` in each repository.
+
 ## MCP servers
 
 `template/.mcp.json` declares the GitHub MCP server shared by every repository; the token is read from the `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable, which the devcontainer takes from `.devcontainer/.env`. That file is seeded once with the placeholder `xxxxx` (replace it with your token) and is gitignored, so nothing secret is committed.
