@@ -35,6 +35,20 @@ render() {
 
 check_common() {
   local dest="$1"
+  # The eight generic agents and the brand tooling of the web designer, in every project.
+  for agent in ha-architect ha-ci-quality-guardian ha-developer ha-lookup ha-release-manager ha-reviewer ha-test-writer ha-webdesigner; do
+    [ -f "$dest/.claude/agents/$agent.md" ] || fail "agent $agent is missing"
+    grep -q "^name: $agent$" "$dest/.claude/agents/$agent.md" || fail "agent $agent does not carry its name"
+  done
+  ! grep -rqiE 'movie_showtimes|allocine|cinema' "$dest/.claude" || fail "a project-specific word is left in .claude"
+  for brand in render.cjs preview.py README.md; do
+    [ -f "$dest/docs/brand/$brand" ] || fail "docs/brand/$brand is missing"
+  done
+  grep -q 'custom_components/demo/brand' "$dest/docs/brand/README.md" || fail "docs/brand/README.md does not name the brand folder"
+  ! grep -rq '{{\|{%' "$dest/.claude/agents" "$dest/docs/brand" || fail "a Jinja sequence is left in the agents or the brand tooling"
+  if command -v node > /dev/null 2>&1; then
+    node --check "$dest/docs/brand/render.cjs" || fail "docs/brand/render.cjs does not parse"
+  fi
   for script in "$dest"/scripts/_common "$dest"/scripts/lint "$dest"/scripts/test "$dest"/scripts/setup "$dest"/scripts/develop; do
     bash -n "$script" || fail "$script does not parse"
   done
@@ -83,6 +97,12 @@ check_common "$dest"
 [ "$("$dest/scripts/test" --list-scopes)" = '["integration"]' ] || fail "unexpected test scopes (plain)"
 [ ! -e "$dest/.coveragerc-integration" ] || fail ".coveragerc-integration generated without a client"
 [ -z "$(find "$dest/custom_components" "$dest/tests" -mindepth 2 -type d ! -name __pycache__)" ] || fail "client folders generated without a client"
+# Without has_card nothing of the card is generated, and the JavaScript lint is there but has nothing to check.
+[ ! -e "$dest/custom_components/demo/card.py" ] && [ ! -e "$dest/custom_components/demo/frontend" ] && [ ! -e "$dest/tests/test_card.py" ] \
+  || fail "card files generated without has_card"
+! grep -q after_dependencies "$dest/custom_components/demo/manifest.json" || fail "manifest.json has after_dependencies without a card"
+[ -f "$dest/eslint.config.mjs" ] || fail "eslint.config.mjs missing"
+grep -q 'nothing to check' <("$dest/scripts/lint" js) || fail "scripts/lint js does not report that there is no JavaScript"
 
 # Fixed choices of the template, checked on the rendered project.
 for workflow in lint test; do
@@ -245,5 +265,25 @@ for command in create-develop-pull-request create-main-pull-request; do
   grep -q 'assigned to `bastgau`' "$dest/.claude/commands/$command.md" || fail "$command.md ignores github_owner"
   ! grep -q janedoe "$dest/.claude/commands/$command.md" || fail "$command.md still names the default owner"
 done
+
+echo "== with a Lovelace card"
+dest="$(render card -d has_card=true)"
+check_common "$dest"
+for card_file in custom_components/demo/card.py custom_components/demo/frontend/demo-card.js tests/test_card.py eslint.config.mjs; do
+  [ -f "$dest/$card_file" ] || fail "$card_file missing with has_card"
+done
+python3 - "$dest" <<'PY' || fail "the card manifest or skeleton is not what hassfest expects"
+import json, pathlib, sys
+dest = pathlib.Path(sys.argv[1]) / "custom_components/demo"
+assert json.load(open(dest / "manifest.json"))["after_dependencies"] == ["frontend", "http"]
+init = (dest / "__init__.py").read_text()
+assert "CONFIG_SCHEMA" in init and "async_register_card" in init, init
+card = (dest / "card.py").read_text()
+assert 'CARD_FILENAME: Final = "demo-card.js"' in card and 'f"/demo/{CARD_FILENAME}"' in card, card
+PY
+python3 -m compileall -q "$dest/custom_components" "$dest/tests" || fail "the generated card code does not compile"
+if command -v node > /dev/null 2>&1 && command -v npx > /dev/null 2>&1; then
+  (cd "$dest" && scripts/lint js > /dev/null) || fail "scripts/lint js fails on the placeholder card"
+fi
 
 echo "OK"

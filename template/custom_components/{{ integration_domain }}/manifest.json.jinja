@@ -1,6 +1,9 @@
 {
   "domain": "{{ integration_domain }}",
   "name": "{{ integration_name }}",
+{%- if has_card %}
+  "after_dependencies": ["frontend", "http"],
+{%- endif %}
   "codeowners": ["@{{ github_owner }}"],
   "config_flow": false,
   "documentation": "https://github.com/{{ github_owner }}/{{ repo_name }}",

@@ -11,7 +11,8 @@ _external_data:
 # Seeded once, never overwritten: generated per repository (HA version dependent), or
 # owned by the repository once created (project-specific fields of the bug report,
 # the tests some repositories vendor from Home Assistant core, a first test to start from,
-# the README, the HACS file, the integration skeleton and the local .env holding your token).
+# the README, the HACS file, the integration skeleton, the Lovelace card of `has_card` with its
+# registration and test, and the local .env holding your token).
 _skip_if_exists:
   - README.md
   - hacs.json
@@ -26,6 +27,9 @@ _skip_if_exists:
   - custom_components/*/*/__init__.py
   - tests/**/__init__.py
   - tests/**/test_integration_loads.py
+  - custom_components/*/card.py
+  - custom_components/*/frontend/*-card.js
+  - tests/test_card.py
 
 # The issue templates became issue forms (.yml): drop the Markdown ones a repository
 # generated before. Runs only on `copier update` from a release older than this version.
@@ -66,6 +70,14 @@ client_tests_path:
   help: Folder holding the client's own tests (only used when there is a client)
   default: "tests/{{ integration_domain }}/{{ client_package }}"
   when: "{{ client_package != '' }}"
+
+has_card:
+  type: bool
+  help: >-
+    Ship a Lovelace card with the integration: card.py serves and registers
+    custom_components/<domain>/frontend/<domain>-card.js (placeholder to replace), with its
+    registration test (seeded once for a new project; the JavaScript lint and CI jobs are always there)
+  default: false
 
 ha_minimum_version:
   type: str

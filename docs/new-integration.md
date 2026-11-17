@@ -36,12 +36,15 @@ Run these steps in a console on your host system, not in a container. The only p
    | `repo_name`                                   | GitHub repository name, also the devcontainer workspace folder                                                     |
    | `description`                                 | One line, goes to `pyproject.toml`. Reuse it as the GitHub description (section 5)                                 |
    | `client_package`                              | Name of the API client package bundled in `custom_components/<domain>/`, or empty when there is none               |
+   | `has_card`                                    | `true` to ship a Lovelace card (default `false`): a placeholder card, its registration and its test                |
    | `github_owner`, `author_name`, `author_email` | **Give the real values**: the defaults are placeholders (`janedoe`, Jane Doe)                                      |
    | `copyright_year`                              | Year of creation (default: the current year)                                                                       |
    | `coverage_fail_under`                         | Coverage floor in percent (default 95). Lower it while there are no tests yet                                      |
    | `python_version`, `python_requires`           | Defaults `3.14` and `>=3.14.2,<3.15`. They must satisfy the `homeassistant` pin                                    |
 
    Having a `client_package` enables the `client` lint and test scopes. Without one, there is a single `integration` scope.
+
+   With `has_card` the project also gets `custom_components/<domain>/card.py` (it serves the card and adds it to every dashboard, from `async_setup` in `__init__.py`), the placeholder `custom_components/<domain>/frontend/<domain-with-dashes>-card.js` to replace with your card, `"after_dependencies": ["frontend", "http"]` in `manifest.json` and `tests/test_card.py`. They are seeded once, like the rest of the skeleton. The JavaScript lint (`scripts/lint js`, `eslint.config.mjs`) and its CI job are always there and do nothing while the repository has no JavaScript.
 
    Commit `.copier-answers.yml` along with the generated files: `copier update` needs it.
 
@@ -56,7 +59,8 @@ Checked in `template/` on `main`:
 - **Quality gates**: `.pre-commit-config.yaml` and `.commitlintrc.mjs` (commit types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`; format `type: subject`, no body or footer).
 - **GitHub**: workflows `lint`, `test`, `release`, `stale`, `sync-labels`, `template-drift`, `validate-for-hacs`, `validate-with-hassfest`; `dependabot.yml`; issue templates; `.github/labels.json`.
 - **Claude Code**: `.claude/commands` (`create-develop-pull-request`, `create-main-pull-request`, `suggest-commit-title`) and `.mcp.json` (GitHub MCP server).
-- **Tests**: `tests/__init__.py`, `tests/conftest.py` and `tests/test_integration_loads.py` are seeded once and then belong to the repository.
+- **Claude Code agents** (`.claude/agents/`, kept in step with the template by `copier update`, not seeded once): the pipeline of a feature is `ha-architect` (design, written in `docs/`) → `ha-developer` (code) → `ha-test-writer` (tests, coverage) → `ha-reviewer` (read-only review). `ha-ci-quality-guardian` runs the CI checks locally before a commit or pull request, `ha-release-manager` prepares a release, `ha-lookup` answers quick factual questions, and `ha-webdesigner` designs the brand images with the tooling in `docs/brand/` (`render.cjs`, `preview.py`, a README; the designs themselves are the project's own). The agents read a `CLAUDE.md` at the root of the repository for what the project does, its data source and its fixed decisions: the template does not generate one, write it for your integration.
+- **Tests**: `tests/__init__.py`, `tests/conftest.py` and `tests/test_integration_loads.py` are seeded once and then belong to the repository. With `has_card`, `tests/test_card.py` too.
 - `LICENSE` (MIT, from `author_name` and `copyright_year`).
 
 Also generated, once (`_skip_if_exists` in `copier.yml`: a repository that already has them keeps its own, and later `copier update` runs never touch them):
