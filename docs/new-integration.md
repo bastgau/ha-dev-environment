@@ -57,7 +57,7 @@ Checked in `template/` on `main`:
 - **Environment**: `.devcontainer/` (Dockerfile, `devcontainer.json`, `.common-env`), `.envrc`, `.vscode/`, `pyproject.toml` (a `uv` project), `pyrightconfig.json`, `.yamllint`.
 - **Scripts** (`scripts/`, see `template/scripts/README.md`): `setup`, `lint`, `test`, `develop`, `update_requirements`, `clean_bruno_headers`.
 - **Quality gates**: `.pre-commit-config.yaml` and `.commitlintrc.mjs` (commit types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`; format `type: subject`, no body or footer).
-- **GitHub**: workflows `lint`, `test`, `release`, `stale`, `sync-labels`, `template-drift`, `validate-for-hacs`, `validate-with-hassfest`; `dependabot.yml`; issue templates; `.github/labels.json`.
+- **GitHub**: workflows `lint`, `test`, `release`, `stale`, `sync-labels`, `template-drift`, `template-update`, `validate-for-hacs`, `validate-with-hassfest`; `dependabot.yml`; issue templates; `.github/labels.json`.
 - **Claude Code**: `.claude/commands` (`create-develop-pull-request`, `create-main-pull-request`, `suggest-commit-title`) and `.mcp.json` (GitHub MCP server).
 - **Claude Code agents** (`.claude/agents/`, kept in step with the template by `copier update`, not seeded once): the pipeline of a feature is `ha-architect` (design, written in `docs/`) → `ha-developer` (code) → `ha-test-writer` (tests, coverage) → `ha-reviewer` (read-only review). `ha-ci-quality-guardian` runs the CI checks locally before a commit or pull request, `ha-release-manager` prepares a release, `ha-lookup` answers quick factual questions, and `ha-webdesigner` designs the brand images with the tooling in `docs/brand/` (`render.cjs`, `preview.py`, a README; the designs themselves are the project's own). The agents read a `CLAUDE.md` at the root of the repository for what the project does, its data source and its fixed decisions: the template does not generate one, write it for your integration.
 - **Tests**: `tests/__init__.py`, `tests/conftest.py` and `tests/test_integration_loads.py` are seeded once and then belong to the repository. With `has_card`, `tests/test_card.py` too.
@@ -166,6 +166,7 @@ Releases are made from the GitHub UI: publishing a release with a tag such as `v
 ## 7. Staying in step with the template
 
 - `template-drift.yml` runs every Monday and turns red when a newer template tag exists. Update with `uvx --from copier copier update`, resolve conflicts, run `scripts/lint` and `scripts/test`, commit.
+- `template-update.yml` runs at the same time and, when a newer template tag exists, opens a pull request against `develop` on branch `template-update/<tag>` with `copier update` applied (conflicts included, marked in the files). It closes the previous template pull request and deletes its branch, so only the newest stays open.
 - Template changes are published by tags `vX.Y.Z` on `ha-dev-environment`. Without a tag, Copier cannot tell what is newer.
 - Do not edit the managed scripts and workflows in the project to change them everywhere: change them in `ha-dev-environment` and release. Local edits survive `copier update` (three-way merge) but can conflict.
 
