@@ -143,7 +143,7 @@ mkdir -p "$work/bad-ha"
 for template in config.yml feature_request.yml bug_report.yml; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
-grep -q 'requires Home Assistant 2026.10.0 or later' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not warn about the minimum Home Assistant version"
+grep -q 'requires Home Assistant 2026.11.0 or later' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not warn about the minimum Home Assistant version"
 grep -qx '      label: Demo version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not name the integration"
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"

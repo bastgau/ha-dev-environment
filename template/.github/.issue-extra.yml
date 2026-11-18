@@ -9,7 +9,7 @@
 #   bug_report_top:
 #     - type: markdown
 #       attributes:
-#         value: Not compatible with Home Assistant prior to 2026.10.
+#         value: Not compatible with Home Assistant prior to 2026.11.
 #   bug_report_versions:
 #     - type: input
 #       attributes:

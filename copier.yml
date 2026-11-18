@@ -90,10 +90,10 @@ has_card:
 ha_minimum_version:
   type: str
   help: Minimum Home Assistant version the integration supports (the homeassistant key of hacs.json), shown as a warning in the bug report
-  default: "2026.10.0"
+  default: "2026.11.0"
   validator: >-
-    {% if not (ha_minimum_version | regex_search('^[0-9]{4}\\.[0-9]+\\.[0-9]+$')) %}
-    Use a Home Assistant version such as 2026.10.0
+    {% if not (ha_minimum_version | regex_search('^(2026\\.1[1-2]|202[7-9]\\.[0-9]+|20[3-9][0-9]\\.[0-9]+)\\.[0-9]+$')) %}
+    Use a Home Assistant version of 2026.11.0 or later: pytest-homeassistant, which the tests run on, starts there
     {% endif %}
 
 python_version:
