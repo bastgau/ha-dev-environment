@@ -45,7 +45,8 @@ lint = [
   # Not on PyPI: installed straight from its GitHub release.
   "docstring-linter @ https://github.com/bastgau/docstring-linter/releases/download/v0.9.0/docstring_linter-0.9.0-py3-none-any.whl",
 ]
-test = ["pytest-homeassistant==2026.11.2"]
+# pytest-cov: the coverage gates of scripts/test; pytest-homeassistant does not bring it.
+test = ["pytest-cov==7.1.0", "pytest-homeassistant==2026.11.2"]
 {%- if client_package %}
 
 # The bundled client's own tests never start Home Assistant (see scripts/test).
