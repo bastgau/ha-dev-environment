@@ -32,11 +32,12 @@ _skip_if_exists:
   - tests/test_card.py
 
 # Dry-run check of the repository settings against .github/repo-settings.json: it lists the
-# differences and never writes to GitHub (no --yes). Skipped while there is no GitHub remote.
+# differences and never writes to GitHub (no --yes). Skipped silently while there is no GitHub remote
+# (also the case in the temporary copies copier renders during an update).
 _tasks:
   - command: |
       repo=$(git remote get-url origin 2>/dev/null | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##') \
-        && [ -n "$repo" ] || { echo "no GitHub remote yet, skipping the settings check"; exit 0; }
+        && [ -n "$repo" ] || exit 0
       scripts/sync-repo-settings apply --from .github/repo-settings.json "$repo" || true
 
 # The issue templates became issue forms (.yml): drop the Markdown ones a repository
