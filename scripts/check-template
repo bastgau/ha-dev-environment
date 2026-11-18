@@ -165,7 +165,10 @@ for key in ("domain", "name", "codeowners", "documentation", "issue_tracker", "v
     assert manifest.get(key), key
 assert manifest["domain"] == "demo" and manifest["name"] == "Demo", manifest
 assert manifest["codeowners"] == ["@janedoe"], manifest
-assert json.load(open(dest / "hacs.json"))["name"] == "Demo"
+hacs = json.load(open(dest / "hacs.json"))
+assert hacs["name"] == "Demo" and hacs["homeassistant"] == "2026.11.0", hacs
+assert hacs["zip_release"] is True and hacs["filename"] == "demo.zip", hacs
+assert hacs["hacs"] == "2.0.0" and hacs["hide_default_branch"] is True, hacs
 PY
 grep -qx '# Demo' "$dest/README.md" || fail "README.md does not name the integration"
 grep -q 'Demo integration' "$dest/README.md" || fail "README.md does not carry the description"
