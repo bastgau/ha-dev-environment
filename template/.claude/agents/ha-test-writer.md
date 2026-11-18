@@ -1,6 +1,6 @@
 ---
 name: ha-test-writer
-description: Writes and fixes pytest tests for a Home Assistant custom integration — bundled client tests without Home Assistant, integration tests with pytest-homeassistant-custom-component — until every coverage gate passes. Use it after code changes or when coverage drops.
+description: Writes and fixes pytest tests for a Home Assistant custom integration — bundled client tests without Home Assistant, integration tests with pytest-homeassistant — until every coverage gate passes. Use it after code changes or when coverage drops.
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 ---
