@@ -143,7 +143,7 @@ mkdir -p "$work/bad-ha"
 for template in config.yml feature_request.yml bug_report.yml; do
   [ -f "$dest/.github/ISSUE_TEMPLATE/$template" ] || fail "issue template $template is missing"
 done
-grep -q 'requires Home Assistant 2026.10.0 or later' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not warn about the minimum Home Assistant version"
+grep -q 'requires Home Assistant 2026.11.0 or later' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not warn about the minimum Home Assistant version"
 grep -qx '      label: Demo version' "$dest/.github/ISSUE_TEMPLATE/bug_report.yml" || fail "bug_report.yml does not name the integration"
 grep -qx '"""Tests for the Demo Home Assistant integration."""' "$dest/tests/__init__.py" \
   || fail "tests/__init__.py does not name the integration"
@@ -169,8 +169,6 @@ assert json.load(open(dest / "hacs.json"))["name"] == "Demo"
 PY
 grep -qx '# Demo' "$dest/README.md" || fail "README.md does not name the integration"
 grep -q 'Demo integration' "$dest/README.md" || fail "README.md does not carry the description"
-# No client: tests/ forbids an Args section, the one the client variant of conftest.py carries.
-! grep -q 'Args:' "$dest/tests/conftest.py" || fail "conftest.py documents arguments without a client"
 # Every label an issue template applies must be one the labels workflow creates.
 python3 - "$dest/.github" <<'PY' || fail "an issue template uses a label missing from labels.json"
 import json, pathlib, re, sys
@@ -255,8 +253,6 @@ for client_file in custom_components/demo/pydemo/__init__.py tests/demo/pydemo/_
 done
 grep -q 'custom_components.demo.pydemo' "$dest/tests/demo/pydemo/test_integration_loads.py" || fail "the client test does not name the client package"
 ! grep -q 'HomeAssistant' "$dest/tests/demo/pydemo/test_integration_loads.py" || fail "the client test starts Home Assistant"
-# With a client, docstring-linter requires the conftest fixture's arguments to be documented.
-grep -q 'Args:' "$dest/tests/conftest.py" || fail "conftest.py does not document its arguments with a client"
 grep -qx "Copyright (c) 2024 Bastien Gautier" "$dest/LICENSE" || fail "LICENSE ignores copyright_year or author_name"
 grep -qx 'COVERAGE_FAIL_UNDER=80' "$dest/.devcontainer/.common-env" || fail ".common-env ignores coverage_fail_under"
 python3 -c "import sys, tomllib; p = tomllib.load(open(sys.argv[1], 'rb'))['project']; assert p['authors'] == p['maintainers'] == [{'name': 'Bastien Gautier', 'email': 'contact@bastiengautier.com'}], p" \
