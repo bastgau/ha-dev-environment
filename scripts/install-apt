@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Installs the GitHub CLI (gh) and Vim with apt, skipping what is already there.
+# Debian and Ubuntu only. Safe to re-run.
+# Usage: scripts/install-apt
+
+set -euo pipefail
+
+fail() { echo "FAIL: $*" >&2; exit 1; }
+
+command -v apt-get > /dev/null 2>&1 || fail "apt-get not found (Debian or Ubuntu only)"
+
+# Package name -> command it provides.
+declare -A tools=([gh]=gh [vim]=vim)
+
+missing=()
+for package in "${!tools[@]}"; do
+  echo "== $package"
+  if command -v "${tools[$package]}" > /dev/null 2>&1; then
+    echo "already installed"
+  else
+    missing+=("$package")
+  fi
+done
+
+if [ "${#missing[@]}" -gt 0 ]; then
+  # Root runs apt directly, anyone else goes through sudo.
+  sudo_cmd=()
+  if [ "$(id -u)" -ne 0 ]; then
+    command -v sudo > /dev/null 2>&1 || fail "not root and sudo is not installed"
+    sudo_cmd=(sudo)
+  fi
+
+  "${sudo_cmd[@]}" apt-get update
+  "${sudo_cmd[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}"
+fi
+
+for package in "${!tools[@]}"; do
+  command -v "${tools[$package]}" > /dev/null 2>&1 || fail "$package is still not on PATH after the installation"
+done
+echo "installed: $(gh --version | head -1), $(vim --version | head -1)"

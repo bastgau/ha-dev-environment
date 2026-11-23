@@ -107,6 +107,9 @@ jobs:
         with:
           gemini_api_key: "${{ secrets.GEMINI_API_KEY }}"
           gemini_model: "${{ inputs.model || vars.GEMINI_MODEL || 'gemini-3.5-flash-lite' }}"
+          # Pinned: 0.70.0 fails to install the extension (GIT_CONFIG_SYSTEM is not permitted,
+          # google-gemini/gemini-cli#30416). Back to "latest" once that is fixed.
+          gemini_cli_version: "0.68.0"
           # Both follow the GEMINI_DEBUG repository variable, to see what the CLI answered when no review is posted.
           gemini_debug: "${{ fromJSON(vars.GEMINI_DEBUG || false) }}"
           upload_artifacts: "${{ vars.GEMINI_DEBUG || false }}"

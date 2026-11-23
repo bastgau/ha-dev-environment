@@ -2,7 +2,8 @@
 
 # Installs what working on this template needs: python3 (scripts/install-python),
 # Node.js for npx (scripts/install-node), uv (scripts/install-uv) and Copier as a
-# uv tool (scripts/install-copier). Safe to re-run.
+# uv tool (scripts/install-copier). On apt systems (Debian, Ubuntu) it also installs
+# gh and vim (scripts/install-apt). Safe to re-run.
 # Usage: scripts/setup   (Linux, macOS, WSL; needs curl and git)
 
 set -euo pipefail
@@ -12,6 +13,11 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 command -v git > /dev/null 2>&1 || fail "git is not installed (Copier needs it)"
 
 scripts_dir="$(dirname "$0")"
+
+# gh and vim come from apt, so this step only runs where apt is available.
+if command -v apt-get > /dev/null 2>&1; then
+  "$scripts_dir/install-apt" || fail "gh and vim could not be installed"
+fi
 
 "$scripts_dir/install-python" || fail "python3 could not be installed"
 "$scripts_dir/install-node" || fail "Node.js (npx) could not be installed"
