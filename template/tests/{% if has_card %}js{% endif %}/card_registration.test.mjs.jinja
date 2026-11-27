@@ -1,0 +1,21 @@
+// The card registers each of its elements and its card-picker entry once, even when the script is loaded
+// twice (a leftover dashboard resource next to the copy card.py serves): it holds for any card, so it keeps
+// protecting yours once the placeholder is replaced. Run by tests/test_card_js.py under Node.
+//
+// Kept in step with the template by `copier update`. Add your card's own tests next to it (*.test.mjs).
+
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { CARD_TYPE, browser } from "./browser.mjs";
+
+test("loading the card twice registers each element and the card-picker entry once", () => {
+  const { load, calls, window } = browser();
+
+  load();
+  load();
+
+  assert.ok(calls.includes(CARD_TYPE), `${CARD_TYPE} is never defined: ${calls}`);
+  assert.equal(new Set(calls).size, calls.length, `an element is defined more than once: ${calls}`);
+  assert.equal(window.customCards.filter((card) => card.type === CARD_TYPE).length, 1);
+});

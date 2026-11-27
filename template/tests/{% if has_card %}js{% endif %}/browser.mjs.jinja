@@ -1,0 +1,43 @@
+// The few browser globals a Lovelace card touches while it loads, for its tests under Node (no npm
+// dependency, no DOM). Home Assistant loads the card as a module: each load has its own top-level scope, but
+// customElements and window are shared, hence a fresh context per load over the same globals.
+//
+// Kept in step with the template by `copier update`. A card that needs more of the browser at load time
+// (document, a custom element base class...) adds it to `globals` below.
+
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+
+export const CARD_TYPE = "{{ integration_domain | replace('_', '-') }}-card";
+
+export const CARD_SOURCE = readFileSync(
+  new URL("../../custom_components/{{ integration_domain }}/frontend/{{ integration_domain | replace('_', '-') }}-card.js", import.meta.url),
+  "utf8",
+);
+
+export function browser() {
+  const defined = new Map();
+  const calls = [];
+  const window = {};
+  const globals = {
+    console: { info() {}, warn() {}, error() {} },
+    URL,
+    HTMLElement: class {
+      attachShadow() {
+        this.shadowRoot = { addEventListener() {}, querySelector: () => null, getElementById: () => null };
+        return this.shadowRoot;
+      }
+    },
+    customElements: {
+      get: (name) => defined.get(name),
+      define: (name, element) => {
+        calls.push(name);
+        if (defined.has(name)) throw new Error(`'${name}' has already been defined`);
+        defined.set(name, element);
+      },
+    },
+    window,
+  };
+  const load = () => vm.runInContext(CARD_SOURCE, vm.createContext({ ...globals }));
+  return { load, calls, window, element: (name) => defined.get(name) };
+}

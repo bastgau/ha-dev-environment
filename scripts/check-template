@@ -99,6 +99,7 @@ check_common "$dest"
 [ -z "$(find "$dest/custom_components" "$dest/tests" -mindepth 2 -type d ! -name __pycache__)" ] || fail "client folders generated without a client"
 # Without has_card nothing of the card is generated, and the JavaScript lint is there but has nothing to check.
 [ ! -e "$dest/custom_components/demo/card.py" ] && [ ! -e "$dest/custom_components/demo/frontend" ] && [ ! -e "$dest/tests/test_card.py" ] \
+  && [ ! -e "$dest/tests/test_card_js.py" ] && [ ! -e "$dest/tests/js" ] \
   || fail "card files generated without has_card"
 ! grep -q after_dependencies "$dest/custom_components/demo/manifest.json" || fail "manifest.json has after_dependencies without a card"
 [ -f "$dest/eslint.config.mjs" ] || fail "eslint.config.mjs missing"
@@ -272,7 +273,7 @@ done
 echo "== with a Lovelace card"
 dest="$(render card -d has_card=true)"
 check_common "$dest"
-for card_file in custom_components/demo/card.py custom_components/demo/frontend/demo-card.js tests/test_card.py eslint.config.mjs; do
+for card_file in custom_components/demo/card.py custom_components/demo/frontend/demo-card.js tests/test_card.py tests/test_card_js.py tests/js/browser.mjs tests/js/card_registration.test.mjs eslint.config.mjs; do
   [ -f "$dest/$card_file" ] || fail "$card_file missing with has_card"
 done
 python3 - "$dest" <<'PY' || fail "the card manifest or skeleton is not what hassfest expects"
@@ -287,6 +288,10 @@ PY
 python3 -m compileall -q "$dest/custom_components" "$dest/tests" || fail "the generated card code does not compile"
 if command -v node > /dev/null 2>&1 && command -v npx > /dev/null 2>&1; then
   (cd "$dest" && scripts/lint js > /dev/null) || fail "scripts/lint js fails on the placeholder card"
+fi
+# The card's JavaScript tests pass on the placeholder card (test_card_js.py runs the same under pytest).
+if command -v node > /dev/null 2>&1; then
+  node --test "$dest/tests/js/card_registration.test.mjs" > /dev/null || fail "the card's JavaScript tests fail on the placeholder card"
 fi
 
 echo "OK"
